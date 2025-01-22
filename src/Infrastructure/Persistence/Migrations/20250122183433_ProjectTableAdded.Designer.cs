@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250122183433_ProjectTableAdded")]
+    partial class ProjectTableAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,46 +91,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Models.TimeEntries.TimeEntry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("description");
-
-                    b.Property<DateTime>("EndDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_date")
-                        .HasDefaultValueSql("timezone('utc', now())");
-
-                    b.Property<int>("Hours")
-                        .HasColumnType("integer")
-                        .HasColumnName("hours");
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("project_id");
-
-                    b.Property<DateTime>("StartDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_date")
-                        .HasDefaultValueSql("timezone('utc', now())");
-
-                    b.HasKey("Id")
-                        .HasName("pk_time_entries");
-
-                    b.HasIndex("ProjectId")
-                        .HasDatabaseName("ix_time_entries_project_id");
-
-                    b.ToTable("time_entries", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Models.Users.User", b =>
@@ -355,18 +318,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Creator");
                 });
 
-            modelBuilder.Entity("Domain.Models.TimeEntries.TimeEntry", b =>
-                {
-                    b.HasOne("Domain.Models.Projects.Project", "Project")
-                        .WithMany("TimeEntries")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_time_entries_projects_project_id");
-
-                    b.Navigation("Project");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Domain.Models.Roles.Role", null)
@@ -422,11 +373,6 @@ namespace Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_asp_net_user_tokens_asp_net_users_user_id");
-                });
-
-            modelBuilder.Entity("Domain.Models.Projects.Project", b =>
-                {
-                    b.Navigation("TimeEntries");
                 });
 
             modelBuilder.Entity("Domain.Models.Users.User", b =>

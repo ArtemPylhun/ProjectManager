@@ -1,4 +1,6 @@
 
+using Domain.Models.Roles;
+using Domain.Models.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -25,7 +27,7 @@ public static class ConfigurePersistence
                 .ConfigureWarnings(w => w.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
 
         // Configure Identity
-        services.AddIdentity<IdentityUser, IdentityRole>(options =>
+        services.AddIdentity<User, Role>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
