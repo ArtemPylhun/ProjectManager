@@ -19,9 +19,22 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
             .HasConversion(new DateTimeUtcConverter())
             .HasDefaultValueSql("timezone('utc', now())");
         
-        builder.HasOne(a => a.Creator)
-            .WithMany(u => u.Projects)
-            .HasForeignKey(a => a.CreatorId)
+        builder.HasOne(p => p.Creator) 
+            .WithMany(u => u.CreatedProjects) 
+            .HasForeignKey(p => p.CreatorId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        
+        builder.HasMany(x => x.TimeEntries)
+            .WithOne(u => u.Project)
+            .HasForeignKey(u => u.ProjectId);
+        
+        builder.HasMany(x => x.ProjectTasks)
+            .WithOne(u => u.Project)
+            .HasForeignKey(u => u.ProjectId);
+        
+        builder.HasMany(x => x.ProjectUsers)
+            .WithOne(u => u.Project)
+            .HasForeignKey(u => u.ProjectId);
     }
 }

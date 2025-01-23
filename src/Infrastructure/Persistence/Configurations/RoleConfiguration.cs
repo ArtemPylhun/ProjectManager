@@ -18,5 +18,9 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             .WithOne()
             .HasForeignKey(rc => rc.RoleId)
             .IsRequired();
+
+        builder.HasMany(x => x.ProjectUsers)
+            .WithOne(pu => pu.Role)
+            .HasForeignKey(pu => pu.RoleId);
     }
 }

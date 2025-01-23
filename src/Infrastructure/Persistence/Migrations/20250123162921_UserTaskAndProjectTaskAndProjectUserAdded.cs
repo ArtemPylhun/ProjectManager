@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class ProjectTableAdded : Migration
+    public partial class UserTaskAndProjectTaskAndProjectUserAdded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -178,6 +178,119 @@ namespace Infrastructure.Persistence.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "project_tasks",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "varchar(255)", nullable: false),
+                    estimated_time = table.Column<int>(type: "integer", nullable: false),
+                    project_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_project_tasks", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_project_tasks_projects_project_id",
+                        column: x => x.project_id,
+                        principalTable: "projects",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "project_users",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    project_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    role_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_project_users", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_project_users_projects_project_id",
+                        column: x => x.project_id,
+                        principalTable: "projects",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_project_users_roles_role_id",
+                        column: x => x.role_id,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_project_users_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "time_entries",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    description = table.Column<string>(type: "varchar(255)", nullable: false),
+                    start_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "timezone('utc', now())"),
+                    end_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "timezone('utc', now())"),
+                    hours = table.Column<int>(type: "integer", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    project_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    project_task_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_time_entries", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_time_entries_project_tasks_project_task_id",
+                        column: x => x.project_task_id,
+                        principalTable: "project_tasks",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_time_entries_projects_project_id",
+                        column: x => x.project_id,
+                        principalTable: "projects",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_time_entries_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_tasks",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    project_task_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_user_tasks", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_user_tasks_project_tasks_project_task_id",
+                        column: x => x.project_task_id,
+                        principalTable: "project_tasks",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_user_tasks_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "ix_asp_net_role_claims_role_id",
                 table: "AspNetRoleClaims",
@@ -216,9 +329,54 @@ namespace Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "ix_project_tasks_project_id",
+                table: "project_tasks",
+                column: "project_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_project_users_project_id",
+                table: "project_users",
+                column: "project_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_project_users_role_id",
+                table: "project_users",
+                column: "role_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_project_users_user_id",
+                table: "project_users",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_projects_creator_id",
                 table: "projects",
                 column: "creator_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_time_entries_project_id",
+                table: "time_entries",
+                column: "project_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_time_entries_project_task_id",
+                table: "time_entries",
+                column: "project_task_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_time_entries_user_id",
+                table: "time_entries",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_tasks_project_task_id",
+                table: "user_tasks",
+                column: "project_task_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_tasks_user_id",
+                table: "user_tasks",
+                column: "user_id");
         }
 
         /// <inheritdoc />
@@ -240,10 +398,22 @@ namespace Infrastructure.Persistence.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "projects");
+                name: "project_users");
+
+            migrationBuilder.DropTable(
+                name: "time_entries");
+
+            migrationBuilder.DropTable(
+                name: "user_tasks");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "project_tasks");
+
+            migrationBuilder.DropTable(
+                name: "projects");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

@@ -14,5 +14,16 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.UserName).IsRequired().HasColumnType("varchar(255)");
         builder.Property(x => x.Email).IsRequired().HasColumnType("varchar(255)");
         
+        builder.HasMany(x => x.TimeEntries)
+            .WithOne(u => u.User)
+            .HasForeignKey(u => u.UserId);
+        
+        builder.HasMany(x => x.UserTasks)
+            .WithOne(u => u.User)
+            .HasForeignKey(u => u.UserId);
+        
+        builder.HasMany(x => x.ProjectUsers)
+            .WithOne(u => u.User)
+            .HasForeignKey(u => u.UserId);
     }
 }

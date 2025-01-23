@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250122193503_TimeEntriesTableAdded")]
-    partial class TimeEntriesTableAdded
+    [Migration("20250123165430_EmailNotificationAdded")]
+    partial class EmailNotificationAdded
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,100 @@ namespace Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Domain.Models.EmailNotifications.EmailNotification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("body");
+
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("integer")
+                        .HasColumnName("notification_type");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("subject");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_email_notifications");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_email_notifications_user_id");
+
+                    b.ToTable("email_notifications", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Models.ProjectTasks.ProjectTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("EstimatedTime")
+                        .HasColumnType("integer")
+                        .HasColumnName("estimated_time");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_project_tasks");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_project_tasks_project_id");
+
+                    b.ToTable("project_tasks", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Models.ProjectUsers.ProjectUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_project_users");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_project_users_project_id");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_project_users_role_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_project_users_user_id");
+
+                    b.ToTable("project_users", (string)null);
+                });
 
             modelBuilder.Entity("Domain.Models.Projects.Project", b =>
                 {
@@ -118,17 +212,31 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("project_id");
 
+                    b.Property<Guid>("ProjectTaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_task_id");
+
                     b.Property<DateTime>("StartDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_date")
                         .HasDefaultValueSql("timezone('utc', now())");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_time_entries");
 
                     b.HasIndex("ProjectId")
                         .HasDatabaseName("ix_time_entries_project_id");
+
+                    b.HasIndex("ProjectTaskId")
+                        .HasDatabaseName("ix_time_entries_project_task_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_time_entries_user_id");
 
                     b.ToTable("time_entries", (string)null);
                 });
@@ -214,6 +322,32 @@ namespace Infrastructure.Persistence.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Models.UsersTasks.UserTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ProjectTaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_task_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_tasks");
+
+                    b.HasIndex("ProjectTaskId")
+                        .HasDatabaseName("ix_user_tasks_project_task_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_user_tasks_user_id");
+
+                    b.ToTable("user_tasks", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -346,10 +480,64 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Models.EmailNotifications.EmailNotification", b =>
+                {
+                    b.HasOne("Domain.Models.Users.User", "User")
+                        .WithMany("EmailNotifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_email_notifications_users_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Models.ProjectTasks.ProjectTask", b =>
+                {
+                    b.HasOne("Domain.Models.Projects.Project", "Project")
+                        .WithMany("ProjectTasks")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_tasks_projects_project_id");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Domain.Models.ProjectUsers.ProjectUser", b =>
+                {
+                    b.HasOne("Domain.Models.Projects.Project", "Project")
+                        .WithMany("ProjectUsers")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_users_projects_project_id");
+
+                    b.HasOne("Domain.Models.Roles.Role", "Role")
+                        .WithMany("ProjectUsers")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_users_roles_role_id");
+
+                    b.HasOne("Domain.Models.Users.User", "User")
+                        .WithMany("ProjectUsers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_project_users_users_user_id");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Models.Projects.Project", b =>
                 {
                     b.HasOne("Domain.Models.Users.User", "Creator")
-                        .WithMany("Projects")
+                        .WithMany("CreatedProjects")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
@@ -367,7 +555,46 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_time_entries_projects_project_id");
 
+                    b.HasOne("Domain.Models.ProjectTasks.ProjectTask", "ProjectTask")
+                        .WithMany("TimeEntries")
+                        .HasForeignKey("ProjectTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_time_entries_project_tasks_project_task_id");
+
+                    b.HasOne("Domain.Models.Users.User", "User")
+                        .WithMany("TimeEntries")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_time_entries_users_user_id");
+
                     b.Navigation("Project");
+
+                    b.Navigation("ProjectTask");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Models.UsersTasks.UserTask", b =>
+                {
+                    b.HasOne("Domain.Models.ProjectTasks.ProjectTask", "ProjectTask")
+                        .WithMany("UsersTask")
+                        .HasForeignKey("ProjectTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_tasks_project_tasks_project_task_id");
+
+                    b.HasOne("Domain.Models.Users.User", "User")
+                        .WithMany("UserTasks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_tasks_users_user_id");
+
+                    b.Navigation("ProjectTask");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -427,14 +654,38 @@ namespace Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_asp_net_user_tokens_asp_net_users_user_id");
                 });
 
-            modelBuilder.Entity("Domain.Models.Projects.Project", b =>
+            modelBuilder.Entity("Domain.Models.ProjectTasks.ProjectTask", b =>
                 {
                     b.Navigation("TimeEntries");
+
+                    b.Navigation("UsersTask");
+                });
+
+            modelBuilder.Entity("Domain.Models.Projects.Project", b =>
+                {
+                    b.Navigation("ProjectTasks");
+
+                    b.Navigation("ProjectUsers");
+
+                    b.Navigation("TimeEntries");
+                });
+
+            modelBuilder.Entity("Domain.Models.Roles.Role", b =>
+                {
+                    b.Navigation("ProjectUsers");
                 });
 
             modelBuilder.Entity("Domain.Models.Users.User", b =>
                 {
-                    b.Navigation("Projects");
+                    b.Navigation("CreatedProjects");
+
+                    b.Navigation("EmailNotifications");
+
+                    b.Navigation("ProjectUsers");
+
+                    b.Navigation("TimeEntries");
+
+                    b.Navigation("UserTasks");
                 });
 #pragma warning restore 612, 618
         }
