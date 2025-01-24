@@ -1,4 +1,3 @@
-using Domain.Models.Projects;
 using Domain.Models.ProjectTasks;
 using Domain.Models.Users;
 
