@@ -38,7 +38,7 @@ public class CreateUserCommandHandler
 
 
         return await existingUserWithUserName.Match(
-            un => Task.FromResult<Result<User, UserException>>(new UserWithNameAlreadyExistsException(un.Id)),
+            un => Task.FromResult<Result<User, UserException>>(new UserWithNameAlreadyExistsException(un.Id, un.UserName)),
             async () =>
             {
                 var existingUserWithEmail = await _userQueries.SearchByEmail(
@@ -46,7 +46,7 @@ public class CreateUserCommandHandler
                     cancellationToken);
                 return await existingUserWithEmail.Match<Task<Result<User, UserException>>>(
                     ue => Task.FromResult<Result<User, UserException>>(
-                        new UserWithEmailAlreadyExistsException(ue.Id)),
+                        new UserWithEmailAlreadyExistsException(ue.Id, ue.Email)),
                     async () => await CreateEntity(request, cancellationToken));
             });
     }

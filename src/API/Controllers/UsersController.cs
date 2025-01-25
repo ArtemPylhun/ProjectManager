@@ -1,5 +1,6 @@
 using API.DTOs;
 using Api.Modules.Errors;
+using Application.Common;
 using Application.Common.Interfaces.Queries;
 using Application.Users.Commands;
 using MediatR;
@@ -11,8 +12,7 @@ namespace API.Controllers;
 [ApiController]
 public class UsersController(ISender sender, IUserQueries userQueries) : ControllerBase
 {
-    [HttpPost]
-    [Route("create")]
+    [HttpPost("create")]
     public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateDto request,
         CancellationToken cancellationToken)
     {
@@ -21,6 +21,40 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             Email = request.Email,
             UserName = request.UserName,
             Password = request.Password,
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<UserDto>>(
+            u => UserDto.FromDomainModel(u),
+            e => e.ToObjectResult());
+    }
+
+    [HttpPut("update")]
+    public async Task<ActionResult<UserDto>> Update([FromBody] UserDto request,
+        CancellationToken cancellationToken)
+    {
+        var input = new UpdateUserCommand
+        {
+            UserId = request.Id.Value,
+            UserName = request.UserName,
+            Email = request.Email,
+            Password = request.Password
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<UserDto>>(
+            user => UserDto.FromDomainModel(user),
+            e => e.ToObjectResult());
+    }
+    
+    [HttpDelete("delete/{userId:guid}")]
+    public async Task<ActionResult<UserDto>> Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
+    {
+        var input = new DeleteUserCommand
+        {
+            UserId = userId
         };
 
         var result = await sender.Send(input, cancellationToken);

@@ -8,10 +8,10 @@ public class UserException(Guid id, string message, Exception? innerException = 
 
 public class UserNotFoundException(Guid id) : UserException(id, $"User under id: {id} not found!");
 
-public class UserWithNameAlreadyExistsException(Guid id) : UserException(id, $"User under such userName already exists!");
+public class UserWithNameAlreadyExistsException(Guid id, string username) : UserException(id, $"User under such userName: \"{username}\" already exists!");
 
-public class UserWithEmailAlreadyExistsException(Guid id)
-    : UserException(id, $"User under such email already exists!");
+public class UserWithEmailAlreadyExistsException(Guid id, string email)
+    : UserException(id, $"User under such email: \"{email}\" already exists!");
     
 public class InvalidCredentialsException() : UserException(Guid.Empty, "Invalid credentials!");
 
