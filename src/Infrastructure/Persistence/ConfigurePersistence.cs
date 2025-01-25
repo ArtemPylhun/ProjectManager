@@ -1,6 +1,9 @@
 
+using Application.Common.Interfaces.Queries;
+using Application.Common.Interfaces.Repositories;
 using Domain.Models.Roles;
 using Domain.Models.Users;
+using Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -39,5 +42,13 @@ public static class ConfigurePersistence
             .AddDefaultTokenProviders();
 
         services.AddScoped<ApplicationDbContextInitializer>();
+        services.AddRepositories();
+    }
+
+    private static void AddRepositories(this IServiceCollection services)
+    {
+        services.AddScoped<UserRepository>();
+        services.AddScoped<IUserRepository>(provider => provider.GetRequiredService<UserRepository>());
+        services.AddScoped<IUserQueries>(provider => provider.GetRequiredService<UserRepository>());
     }
 }

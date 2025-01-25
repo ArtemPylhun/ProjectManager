@@ -7,7 +7,7 @@ using Optional;
 
 namespace Infrastructure.Persistence.Repositories;
 
-public class UserTaskRepository(ApplicationDbContext context): IUserTaskRepository, IUserTaskQueries
+public class UserTaskRepository(ApplicationDbContext context) : IUserTaskRepository, IUserTaskQueries
 {
     public async Task<UserTask> Add(UserTask userTask, CancellationToken cancellationToken)
     {
@@ -43,7 +43,8 @@ public class UserTaskRepository(ApplicationDbContext context): IUserTaskReposito
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<UserTask>> GetAllByProjectTaskId(ProjectTaskId projectTaskId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<UserTask>> GetAllByProjectTaskId(ProjectTaskId projectTaskId,
+        CancellationToken cancellationToken)
     {
         return await context.UserTasks
             .AsNoTracking()
@@ -61,20 +62,20 @@ public class UserTaskRepository(ApplicationDbContext context): IUserTaskReposito
 
     public async Task<Option<UserTask>> GetById(UserTaskId id, CancellationToken cancellationToken)
     {
-        var entity =  await context.UserTasks
+        var entity = await context.UserTasks
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        
-        return entity == null ? Option.None<UserTask>() : Option.Some(entity);
 
+        return entity == null ? Option.None<UserTask>() : Option.Some(entity);
     }
 
-    public async Task<Option<UserTask>> GetByProjectTaskAndUserIds(ProjectTaskId projectTaskId, Guid userId, CancellationToken cancellationToken)
+    public async Task<Option<UserTask>> GetByProjectTaskAndUserIds(ProjectTaskId projectTaskId, Guid userId,
+        CancellationToken cancellationToken)
     {
-        var entity =  await context.UserTasks
+        var entity = await context.UserTasks
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.ProjectTaskId == projectTaskId && x.UserId == userId, cancellationToken);
-        
+
         return entity == null ? Option.None<UserTask>() : Option.Some(entity);
     }
 }
