@@ -28,3 +28,16 @@ public record UserCreateDto(
             Password: user.PasswordHash
         );
 }
+
+public record UserLoginDto(
+    string? Email,
+    string? UserName,
+    string Password)
+{
+    public static UserLoginDto FromUserLoginDomainModel(User user)
+        => new(
+            Email: user.Email,
+            UserName: user.UserName,
+            Password: user.PasswordHash
+        );
+}

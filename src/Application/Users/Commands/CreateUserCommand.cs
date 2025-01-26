@@ -1,6 +1,7 @@
 using Application.Common;
 using Application.Common.Interfaces.Queries;
 using Application.Users.Exceptions;
+using Domain.Models.Roles;
 using Domain.Models.Users;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -18,14 +19,17 @@ public class CreateUserCommandHandler
     : IRequestHandler<CreateUserCommand, Result<User, UserException>>
 {
     private readonly UserManager<User> _userManager;
+    private readonly RoleManager<Role> _roleManager;
     private readonly IUserQueries _userQueries;
 
     public CreateUserCommandHandler(
         UserManager<User> userManager,
+        RoleManager<Role> roleManager,
         IUserQueries userQueries)
     {
         _userManager = userManager;
         _userQueries = userQueries;
+        _roleManager = roleManager;
     }
 
     public async Task<Result<User, UserException>> Handle(
@@ -64,6 +68,12 @@ public class CreateUserCommandHandler
                 Email = request.Email
             };
             var entity = await _userManager.CreateAsync(user, request.Password);
+            var userRole = await _roleManager.FindByNameAsync("User");
+            if (userRole == null)
+            {
+                await _roleManager.CreateAsync(new Role { Name = "User"});
+            }
+            await _userManager.AddToRoleAsync(user, "User");
             
             return Result<User,UserException>.FromIdentityResult<User, UserException>(entity, user, e => new UserUnknownException(user.Id, new Exception("User creation failed")));
         }

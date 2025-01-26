@@ -13,20 +13,27 @@ public class Project
     public DateTime CreatedAt { get; private set; }
     public Guid CreatorId { get; private set; }
     public User? Creator { get; }
-    
+    public string ColorHex { get; private set; }
+    public Guid ClientId { get; private set; }
+    public User? Client { get; }
+
     public ICollection<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();
     public ICollection<ProjectTask> ProjectTasks { get; set; } = new List<ProjectTask>();
     public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
 
-    private Project(ProjectId id, string name, string description, DateTime createdAt, Guid creatorId)
+    private Project(ProjectId id, string name, string description, DateTime createdAt, Guid creatorId, string colorHex,
+        Guid clientId)
     {
         Id = id;
         Name = name;
         Description = description;
         CreatedAt = createdAt;
         CreatorId = creatorId;
+        ColorHex = colorHex;
+        ClientId = clientId;
     }
 
     public static Project New(ProjectId id, string name, string description, DateTime createdAt,
-        Guid userId) => new(id, name, description, createdAt, userId);
+        Guid userId, string colorHex, Guid clientId) =>
+        new(id, name, description, createdAt, userId, colorHex, clientId);
 }

@@ -1,8 +1,10 @@
 
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
 using Domain.Models.Roles;
 using Domain.Models.Users;
+using Infrastructure.Authentication;
 using Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +31,6 @@ public static class ConfigurePersistence
                 .UseSnakeCaseNamingConvention()
                 .ConfigureWarnings(w => w.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
 
-        // Configure Identity
         services.AddIdentity<User, Role>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -50,5 +51,8 @@ public static class ConfigurePersistence
         services.AddScoped<UserRepository>();
         services.AddScoped<IUserRepository>(provider => provider.GetRequiredService<UserRepository>());
         services.AddScoped<IUserQueries>(provider => provider.GetRequiredService<UserRepository>());
+        
+        services.AddScoped<JwtProvider>();
+        services.AddScoped<IJwtProvider>(provider => provider.GetRequiredService<JwtProvider>());
     }
 }

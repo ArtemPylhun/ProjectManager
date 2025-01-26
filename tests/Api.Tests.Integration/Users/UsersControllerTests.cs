@@ -1,9 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
 using API.DTOs;
+using Domain.Models.Roles;
 using Domain.Models.Users;
 using FluentAssertions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Tests.Common;
 using Tests.Data;
 
@@ -13,11 +17,13 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 {
     private readonly User _newUser;
     private readonly User _mainUser;
+    private readonly Role _userRole;
 
     public UsersControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
         _newUser = UsersData.NewUser;
         _mainUser = UsersData.MainUser;
+        _userRole = RolesData.UserRole;
     }
 
     [Fact]
@@ -209,18 +215,17 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
     
-/*
+
     [Fact]
     public async Task ShouldLoginUser()
     {
         // Arrange
-        var email = _mainUser.Email;
-        var password = "password";
-        var request = new LoginRequest
-        {
-            Email = email,
-            Password = password
-        };
+        var password = "Admin!23";
+        var request = new UserLoginDto(
+            Email:  _mainUser.Email,
+            UserName: _mainUser.UserName,
+            Password: password
+        );
 
         // Act
         var response = await Client.PostAsJsonAsync("users/login", request);
@@ -236,19 +241,20 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
     {
         // Arrange
         var email = "notFoundEmail@gmail.com";
-        var password = "password";
-        var request = new LoginRequest
-        {
-            Email = email,
-            Password = password
-        };
+        var userName = "notFoundUsername";
+        var password = "Admin!23";
+        var request = new UserLoginDto(
+            Email: email,
+            UserName: userName,
+            Password: password
+        );
 
         // Act
         var response = await Client.PostAsJsonAsync("users/login", request);
 
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -256,12 +262,13 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
     {
         // Arrange
         var email = _mainUser.Email;
-        var password = "wrongPassword";
-        var request = new LoginRequest
-        {
-            Email = email,
-            Password = password
-        };
+        var userName = "notFoundUsername";
+        var password = "wrongPassword!233";
+        var request = new UserLoginDto(
+            Email: email,
+            UserName: userName,
+            Password: password
+        );
 
         // Act
         var response = await Client.PostAsJsonAsync("users/login", request);
@@ -270,7 +277,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
+/*
     [Fact]
     public async Task ShouldChangeUserRole()
     {
@@ -324,14 +331,14 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task InitializeAsync()
     {
         await Context.Users.AddAsync(_mainUser);
-
+        await Context.Roles.AddAsync(_userRole);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
         Context.Users.RemoveRange(Context.Users);
-
+        Context.Roles.RemoveRange(Context.Roles);
         await SaveChangesAsync();
     }
 }

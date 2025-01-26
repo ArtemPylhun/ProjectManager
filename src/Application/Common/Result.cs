@@ -23,8 +23,8 @@ public readonly struct Result<TValue, TError>
         _value = default;
         _error = error;
     }
-    private static Result<TValue, TError> Success(TValue value) => new(value);
-    private static Result<TValue, TError> Failure(TError error) => new(error);
+    public static Result<TValue, TError> Success(TValue value) => new(value);
+    public static Result<TValue, TError> Failure(TError error) => new(error);
 
     public static implicit operator Result<TValue, TError>(TValue value) => new(value);
     public static implicit operator Result<TValue, TError>(TError error) => new(error);
