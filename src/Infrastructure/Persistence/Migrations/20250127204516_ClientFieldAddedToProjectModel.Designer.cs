@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250123165430_EmailNotificationAdded")]
-    partial class EmailNotificationAdded
+    [Migration("20250127204516_ClientFieldAddedToProjectModel")]
+    partial class ClientFieldAddedToProjectModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -125,6 +125,15 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_id");
+
+                    b.Property<string>("ColorHex")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("color_hex");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -147,6 +156,9 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_projects");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("ix_projects_client_id");
 
                     b.HasIndex("CreatorId")
                         .HasDatabaseName("ix_projects_creator_id");
@@ -536,12 +548,21 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Models.Projects.Project", b =>
                 {
+                    b.HasOne("Domain.Models.Users.User", "Client")
+                        .WithMany("ClientProjects")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_projects_asp_net_users_client_id");
+
                     b.HasOne("Domain.Models.Users.User", "Creator")
                         .WithMany("CreatedProjects")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_projects_asp_net_users_creator_id");
+
+                    b.Navigation("Client");
 
                     b.Navigation("Creator");
                 });
@@ -677,6 +698,8 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Models.Users.User", b =>
                 {
+                    b.Navigation("ClientProjects");
+
                     b.Navigation("CreatedProjects");
 
                     b.Navigation("EmailNotifications");

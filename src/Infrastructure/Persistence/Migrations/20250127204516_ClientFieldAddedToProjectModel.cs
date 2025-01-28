@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class UserTaskAndProjectTaskAndProjectUserAdded : Migration
+    public partial class ClientFieldAddedToProjectModel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -158,6 +158,27 @@ namespace Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "email_notifications",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    subject = table.Column<string>(type: "varchar(255)", nullable: false),
+                    body = table.Column<string>(type: "varchar(255)", nullable: false),
+                    notification_type = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_email_notifications", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_email_notifications_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "projects",
                 columns: table => new
                 {
@@ -165,11 +186,19 @@ namespace Infrastructure.Persistence.Migrations
                     name = table.Column<string>(type: "text", nullable: false),
                     description = table.Column<string>(type: "text", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "timezone('utc', now())"),
-                    creator_id = table.Column<Guid>(type: "uuid", nullable: false)
+                    creator_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    color_hex = table.Column<string>(type: "text", nullable: false),
+                    client_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_projects", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_projects_asp_net_users_client_id",
+                        column: x => x.client_id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_projects_asp_net_users_creator_id",
                         column: x => x.creator_id,
@@ -329,6 +358,11 @@ namespace Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "ix_email_notifications_user_id",
+                table: "email_notifications",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_project_tasks_project_id",
                 table: "project_tasks",
                 column: "project_id");
@@ -347,6 +381,11 @@ namespace Infrastructure.Persistence.Migrations
                 name: "ix_project_users_user_id",
                 table: "project_users",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_projects_client_id",
+                table: "projects",
+                column: "client_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_projects_creator_id",
@@ -396,6 +435,9 @@ namespace Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "email_notifications");
 
             migrationBuilder.DropTable(
                 name: "project_users");

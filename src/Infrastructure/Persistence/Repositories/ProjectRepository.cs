@@ -23,7 +23,7 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Option<Project>> SearchByName(string name, CancellationToken cancellationToken)
+    public async Task<Option<Project>> GetByName(string name, CancellationToken cancellationToken)
     {
         var entity = await context.Projects
             .AsNoTracking()

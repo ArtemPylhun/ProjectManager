@@ -13,5 +13,6 @@ public class User: IdentityUser<Guid>
     public ICollection<UserTask> UserTasks { get; set; } = new List<UserTask>();
     public ICollection<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();
     public ICollection<Project> CreatedProjects { get; set; } = new List<Project>();
+    public ICollection<Project> ClientProjects { get; set; } = new List<Project>();
     public ICollection<EmailNotification> EmailNotifications { get; set; } = new List<EmailNotification>();
 }

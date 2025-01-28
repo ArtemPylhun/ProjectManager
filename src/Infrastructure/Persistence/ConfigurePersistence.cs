@@ -52,6 +52,34 @@ public static class ConfigurePersistence
         services.AddScoped<IUserRepository>(provider => provider.GetRequiredService<UserRepository>());
         services.AddScoped<IUserQueries>(provider => provider.GetRequiredService<UserRepository>());
         
+        services.AddScoped<RoleRepository>();
+        services.AddScoped<IRoleRepository>(provider => provider.GetRequiredService<RoleRepository>());
+        services.AddScoped<IRoleQueries>(provider => provider.GetRequiredService<RoleRepository>());
+
+        services.AddScoped<EmailNotificationRepository>();
+        services.AddScoped<IEmailNotificationRepository>(provider => provider.GetRequiredService<EmailNotificationRepository>());
+        services.AddScoped<IEmailNotificationQueries>(provider => provider.GetRequiredService<EmailNotificationRepository>());
+
+        services.AddScoped<ProjectRepository>();
+        services.AddScoped<IProjectRepository>(provider => provider.GetRequiredService<ProjectRepository>());
+        services.AddScoped<IProjectQueries>(provider => provider.GetRequiredService<ProjectRepository>());
+
+        services.AddScoped<ProjectTaskRepository>();
+        services.AddScoped<IProjectTaskRepository>(provider => provider.GetRequiredService<ProjectTaskRepository>());
+        services.AddScoped<IProjectTaskQueries>(provider => provider.GetRequiredService<ProjectTaskRepository>());
+
+        services.AddScoped<ProjectUserRepository>();
+        services.AddScoped<IProjectUserRepository>(provider => provider.GetRequiredService<ProjectUserRepository>());
+        services.AddScoped<IProjectUserQueries>(provider => provider.GetRequiredService<ProjectUserRepository>());
+        
+        services.AddScoped<TimeEntryRepository>();
+        services.AddScoped<ITimeEntryRepository>(provider => provider.GetRequiredService<TimeEntryRepository>());
+        services.AddScoped<ITimeEntryQueries>(provider => provider.GetRequiredService<TimeEntryRepository>());
+
+        services.AddScoped<UserTaskRepository>();
+        services.AddScoped<IUserTaskRepository>(provider => provider.GetRequiredService<UserTaskRepository>());
+        services.AddScoped<IUserTaskQueries>(provider => provider.GetRequiredService<UserTaskRepository>());
+        
         services.AddScoped<JwtProvider>();
         services.AddScoped<IJwtProvider>(provider => provider.GetRequiredService<JwtProvider>());
     }

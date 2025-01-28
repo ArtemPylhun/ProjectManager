@@ -17,4 +17,8 @@
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.10.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="EmailNotifications\Commands\" />
+    </ItemGroup>
+
 </Project>

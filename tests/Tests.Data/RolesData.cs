@@ -12,4 +12,13 @@ public static class RolesData
             NormalizedName = "User".ToUpperInvariant(),
             ConcurrencyStamp = Guid.NewGuid().ToString()
         };
+    
+    public static Role AdminRole =>
+        new Role
+        {
+            Id = Guid.NewGuid(), 
+            Name = "Admin",
+            NormalizedName = "Admin".ToUpperInvariant(),
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        };
 }
