@@ -25,4 +25,16 @@ public static class UsersData
         PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
         NormalizedEmail = "userName@gmail.com".ToUpperInvariant(),
         SecurityStamp = Guid.NewGuid().ToString()
-    };}
+    };
+    
+    public static User UserForDeletion = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "userName12@gmail.com",
+        UserName = "UserName12",
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        NormalizedEmail = "userName12@gmail.com".ToUpperInvariant(),
+        SecurityStamp = Guid.NewGuid().ToString()
+    };
+    
+}

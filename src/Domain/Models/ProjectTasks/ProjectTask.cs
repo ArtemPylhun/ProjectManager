@@ -26,4 +26,11 @@ public class ProjectTask
     }
     
     public static ProjectTask New(ProjectTaskId id,ProjectId projectId, string name, int estimatedTime) => new(id, projectId, name, estimatedTime);
+
+    public void UpdateDetails( ProjectId projectId, string name, int estimatedTime)
+    {
+        ProjectId = projectId;
+        Name = name;
+        EstimatedTime = estimatedTime;
+    }
 }

@@ -3,7 +3,7 @@ using Domain.Models.Projects;
 namespace API.DTOs;
 
 public record ProjectDto(
-    Guid? Id,
+    Guid Id,
     string Name,
     string Description,
     string ColorHex,
@@ -20,4 +20,25 @@ public record ProjectDto(
          CreatedAt: project.CreatedAt,
          CreatorId: project.CreatorId,
          ClientId: project.ClientId);
+}
+
+public record ProjectCreateDto(
+    string Name,
+    string Description,
+    string ColorHex,
+    DateTime CreatedAt,
+    Guid CreatorId,
+    Guid ClientId)
+{
+   
+}
+
+public record ProjectUpdateDto(
+    Guid Id,
+    string Name,
+    string Description,
+    string ColorHex,
+    Guid ClientId)
+{
+   
 }

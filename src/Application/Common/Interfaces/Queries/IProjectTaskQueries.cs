@@ -10,6 +10,5 @@ public interface IProjectTaskQueries
     Task<IReadOnlyList<ProjectTask>> GetAllByProjectId(ProjectId projectId, CancellationToken cancellationToken);
     Task<Option<ProjectTask>> SearchByName(string name, CancellationToken cancellationToken);
     Task<Option<ProjectTask>> GetById(ProjectTaskId id, CancellationToken cancellationToken);
-    Task<Option<ProjectTask>> GetByProjectId(ProjectId id, CancellationToken cancellationToken);
     
 }

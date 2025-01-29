@@ -6,7 +6,6 @@ using Domain.Models.Projects;
 using Domain.Models.Users;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Projects.Commands;
 
@@ -54,7 +53,7 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
 
         return await existingProject.Match(
             async p => await Task.FromResult(
-                Result<Project, ProjectException>.Failure(new ProjectAlreadyExistsException(p.Id))),
+                Result<Project, ProjectException>.Failure(new ProjectAlreadyExistsException(p.Id, p.Name))),
             async () =>
             {
                 Project newProject = Project.New(ProjectId.New(), request.Name, request.Description, DateTime.UtcNow,
@@ -79,3 +78,5 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
         }
     }
 }
+
+//TODO: create UserProjectRole too

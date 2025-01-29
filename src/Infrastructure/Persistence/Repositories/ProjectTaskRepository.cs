@@ -42,14 +42,6 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
 
         return entity == null ? Option.None<ProjectTask>() : Option.Some(entity);
     }
-    public async Task<Option<ProjectTask>> GetByProjectId(ProjectId id, CancellationToken cancellationToken)
-    {
-        var entity = await context.ProjectTasks
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.ProjectId == id, cancellationToken);
-
-        return entity == null ? Option.None<ProjectTask>() : Option.Some(entity);
-    }
 
     public async Task<ProjectTask> Add(ProjectTask project, CancellationToken cancellationToken)
     {

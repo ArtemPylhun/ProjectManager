@@ -20,16 +20,16 @@ public class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Resul
         _roleManager = roleManager;
     }
 
-    public Task<Result<Role, RoleException>> Handle(DeleteRoleCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Role, RoleException>> Handle(DeleteRoleCommand request, CancellationToken cancellationToken)
     {
-        var existingRole = _roleManager.FindByIdAsync(request.Id.ToString()).Result;
+        var existingRole = await _roleManager.FindByIdAsync(request.Id.ToString());
         if (existingRole == null)
         {
-            return Task.FromResult(Result<Role, RoleException>.Failure(new RoleNotFoundException(Guid.Empty)));
+            return await Task.FromResult(Result<Role, RoleException>.Failure(new RoleNotFoundException(Guid.Empty)));
         }
 
         var result = _roleManager.DeleteAsync(existingRole).Result;
-        return Task.FromResult(Result<Role, RoleException>.FromIdentityResult<Role, RoleException>(result, existingRole,
+        return await Task.FromResult(Result<Role, RoleException>.FromIdentityResult<Role, RoleException>(result, existingRole,
             e => new RoleUnknownException(existingRole.Id, new Exception(e.ToString()))));
     }
 }

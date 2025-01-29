@@ -41,7 +41,8 @@ public static class ConfigurePersistence
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
-
+        
+        
         services.AddScoped<ApplicationDbContextInitializer>();
         services.AddRepositories();
     }

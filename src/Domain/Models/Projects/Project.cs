@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Domain.Models.ProjectTasks;
 using Domain.Models.ProjectUsers;
 using Domain.Models.TimeEntries;
@@ -36,4 +37,13 @@ public class Project
     public static Project New(ProjectId id, string name, string description, DateTime createdAt,
         Guid userId, string colorHex, Guid clientId) =>
         new(id, name, description, createdAt, userId, colorHex, clientId);
+
+    public void UpdateDetails(string name, string description, string colorHex, Guid clientId)
+    {
+        Name = name;
+        Description = description;
+        ColorHex = colorHex;
+        ClientId = clientId;
+        
+    }
 }

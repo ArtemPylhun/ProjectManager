@@ -33,7 +33,6 @@ public class DeleteUserCommandHandler
         }
 
         var result = await _userManager.DeleteAsync(existingUser);
-
         return Result<User, UserException>.FromIdentityResult<User, UserException>(result, existingUser,
                      e => new UserUnknownException(request.UserId, new Exception(e.ToString())));
     }

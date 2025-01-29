@@ -4,10 +4,7 @@ using API.DTOs;
 using Domain.Models.Roles;
 using Domain.Models.Users;
 using FluentAssertions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Tests.Common;
 using Tests.Data;
 
@@ -17,6 +14,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 {
     private readonly User _newUser;
     private readonly User _mainUser;
+    private readonly User _userForDeletion;
     private readonly Role _userRole;
 
     public UsersControllerTests(IntegrationTestWebFactory factory) : base(factory)
@@ -24,6 +22,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         _newUser = UsersData.NewUser;
         _mainUser = UsersData.MainUser;
         _userRole = RolesData.UserRole;
+        _userForDeletion = UsersData.UserForDeletion;
     }
 
     [Fact]
@@ -100,13 +99,16 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldDeleteUser()
     {
         // Arrange
-        var userId = _mainUser.Id;
+        var userId = _userForDeletion.Id;
 
         // Act
         var response = await Client.DeleteAsync($"users/delete/{userId}");
 
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
+        
+        var dbUser = await Context.Roles.FindAsync(userId);
+        dbUser.Should().BeNull();
     }
 
     [Fact]
@@ -331,6 +333,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task InitializeAsync()
     {
         await Context.Users.AddAsync(_mainUser);
+        await Context.Users.AddAsync(_userForDeletion);
         await Context.Roles.AddAsync(_userRole);
         await SaveChangesAsync();
     }
@@ -339,6 +342,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
     {
         Context.Users.RemoveRange(Context.Users);
         Context.Roles.RemoveRange(Context.Roles);
+        Context.Projects.RemoveRange(Context.Projects);
         await SaveChangesAsync();
     }
 }

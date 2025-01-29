@@ -71,7 +71,7 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
 
         if (!String.IsNullOrEmpty(token))
         {
-            return await Task.FromResult<Result<string, UserException>>(token);
+            return await Task.FromResult(Result<string, UserException>.Success(token));
         }
         
         return await Task.FromResult<Result<string, UserException>>(new InvalidTokenException());

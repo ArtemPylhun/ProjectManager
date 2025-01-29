@@ -10,7 +10,7 @@ public class ProjectException(ProjectId id, string message, Exception? innerExce
 
 public class ProjectNotFoundException(ProjectId id) : ProjectException(id, $"Project under id: {id} not found!");
 
-public class ProjectAlreadyExistsException(ProjectId id) : ProjectException(id, $"Project already exists: {id}!");
+public class ProjectAlreadyExistsException(ProjectId id, string name) : ProjectException(id, $"Project already exists: {name}!");
 
 public class ProjectUnknownException(ProjectId id, Exception innerException )
     : ProjectException(id, $"Unknown exception for the project under id: {id}!", innerException );

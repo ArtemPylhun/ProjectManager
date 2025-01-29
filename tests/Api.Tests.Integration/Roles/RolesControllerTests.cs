@@ -79,10 +79,11 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldNotDeleteRoleBecauseNotFound()
     {
         // Arrange
+        var roleNotFound = "RoleNotFound";
         var role = new RoleDto
         (
             Id: null,
-            Name: "RoleNotFound"
+            Name: roleNotFound
         );
 
         // Act
@@ -165,6 +166,7 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task DisposeAsync()
     {
         Context.Roles.RemoveRange(Context.Roles);
+        Context.Users.RemoveRange(Context.Users);
         await SaveChangesAsync();
     }
 }
