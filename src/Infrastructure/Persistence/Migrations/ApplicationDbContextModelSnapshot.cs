@@ -221,7 +221,7 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("project_id");
 
-                    b.Property<Guid>("ProjectTaskId")
+                    b.Property<Guid?>("ProjectTaskId")
                         .HasColumnType("uuid")
                         .HasColumnName("project_task_id");
 
@@ -576,8 +576,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasOne("Domain.Models.ProjectTasks.ProjectTask", "ProjectTask")
                         .WithMany("TimeEntries")
                         .HasForeignKey("ProjectTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_time_entries_project_tasks_project_task_id");
 
                     b.HasOne("Domain.Models.Users.User", "User")

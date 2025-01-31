@@ -28,6 +28,18 @@ public static class ProjectsData
             clientId
         );
     
+    public static Project ExistingProjectForProjectUser(Guid creatorId, Guid clientId) => 
+        Project.New
+        (
+            ProjectId.New(), 
+            "ExistingProjectForProjectUser",
+            "ExistingProjectForProjectUserDescription",
+            DateTime.UtcNow,
+            creatorId,
+            "#000fff",
+            clientId
+        );
+    
     public static Project ExistingProject2(Guid creatorId, Guid clientId) => 
         Project.New
         (

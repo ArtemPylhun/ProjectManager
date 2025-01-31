@@ -68,4 +68,32 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
             ev => ProjectDto.FromDomainModel(ev),
             e => e.ToObjectResult());
     }
+    
+    [HttpPost("add-user-to-project")]
+    public async Task<ActionResult<ProjectUserDto>> AddUserToProject([FromBody] ProjectUserCreateDto request, CancellationToken cancellationToken)
+    {
+        var input = new AddUserToProjectCommand
+        {
+            ProjectId = request.ProjectId,
+            UserId = request.UserId,
+            RoleId = request.RoleId
+        };
+        var result = await sender.Send(input, cancellationToken);
+        return result.Match<ActionResult<ProjectUserDto>>(
+            pu => ProjectUserDto.FromDomainModel(pu),
+            e => e.ToObjectResult());
+    }
+    
+    [HttpDelete("remove-user-from-project/{projectUserId:guid}")]
+    public async Task<ActionResult<ProjectUserDto>> RemoveUserFromProject([FromRoute] Guid projectUserId, CancellationToken cancellationToken)
+    {
+        var input = new RemoveUserFromProjectCommand
+        {
+            ProjectUserId = projectUserId
+        };
+        var result = await sender.Send(input, cancellationToken);
+        return result.Match<ActionResult<ProjectUserDto>>(
+            pu => ProjectUserDto.FromDomainModel(pu),
+            e => e.ToObjectResult());
+    }
 }

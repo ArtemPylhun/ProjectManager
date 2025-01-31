@@ -22,14 +22,10 @@ public record ProjectTaskDto(
 public record ProjectTaskCreateDto(
     ProjectId ProjectId,
     string Name,
-    int EstimatedTime)
-{
-}
+    int EstimatedTime);
 
 public record ProjectTaskUpdateDto(
     ProjectTaskId? Id,
     ProjectId ProjectId,
     string Name,
-    int EstimatedTime)
-{
-}
+    int EstimatedTime);

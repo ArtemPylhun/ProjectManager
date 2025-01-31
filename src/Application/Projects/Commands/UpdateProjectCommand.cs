@@ -76,7 +76,7 @@ public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand,
         }
         catch (Exception exception)
         {
-            return new ProjectUnknownException(ProjectId.Empty(), exception);
+            return new ProjectUnknownException(entity.Id, exception);
         }
     }
 }

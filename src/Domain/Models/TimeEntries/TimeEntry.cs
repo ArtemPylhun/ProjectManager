@@ -12,19 +12,18 @@ public class TimeEntry
     public DateTime EndDate { get; private set; }
     public int Hours { get; private set; }
 
-    public Guid UserId { get; private set;}
+    public Guid UserId { get; private set; }
     public User? User { get; }
 
     public ProjectId ProjectId { get; private set; }
     public Project? Project { get; }
 
-    public ProjectTaskId ProjectTaskId { get; private set; }
+    public ProjectTaskId? ProjectTaskId { get; private set; }
     public ProjectTask? ProjectTask { get; }
-    
 
 
     private TimeEntry(TimeEntryId id, string description, DateTime startDate, DateTime endDate, int hours,
-        Guid userId, ProjectId projectId, ProjectTaskId projectTaskId)
+        Guid userId, ProjectId projectId, ProjectTaskId? projectTaskId)
     {
         Id = id;
         Description = description;
@@ -37,5 +36,18 @@ public class TimeEntry
     }
 
     public static TimeEntry New(TimeEntryId id, string description, DateTime startDate, DateTime endDate, int hours,
-        Guid userId, ProjectId projectId, ProjectTaskId projectTaskId) => new(id,description, startDate, endDate, hours, userId, projectId, projectTaskId);
+        Guid userId, ProjectId projectId, ProjectTaskId projectTaskId) => new(id, description, startDate, endDate,
+        hours, userId, projectId, projectTaskId);
+
+    public void UpdateDetails(string description, DateTime startTime, DateTime endTime, int hours, Guid userId,
+        ProjectId projectId, ProjectTaskId projectTaskId)
+    {
+        Description = description;
+        StartDate = startTime;
+        EndDate = endTime;
+        Hours = hours;
+        UserId = userId;
+        ProjectId = projectId;
+        ProjectTaskId = projectTaskId;
+    }
 }

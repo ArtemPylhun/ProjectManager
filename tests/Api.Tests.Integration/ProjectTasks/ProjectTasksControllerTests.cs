@@ -5,6 +5,7 @@ using Domain.Models.Projects;
 using Domain.Models.ProjectTasks;
 using Domain.Models.Users;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Tests.Common;
 using Tests.Data;
 
@@ -36,7 +37,12 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         var response = await Client.PostAsJsonAsync("project-tasks/create", request);
         //Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        
+        var createdProjectTask = await response.ToResponseModel<ProjectTaskDto>();
+        createdProjectTask.Id.Value.Should().NotBeEmpty();
+        createdProjectTask.Name.Should().Be(request.Name);
+        createdProjectTask.EstimatedTime.Should().Be(request.EstimatedTime);
+        createdProjectTask.ProjectId.Should().Be(request.ProjectId);
     }
 
     [Fact]
@@ -72,7 +78,17 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         var response = await Client.PutAsJsonAsync("project-tasks/update", request);
         //Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        
+        var updatedProjectTask = await response.ToResponseModel<ProjectTaskDto>();
+        updatedProjectTask.Id.Value.Should().Be(_existingProjectTask.Id.Value);
+
+        var dbProjectTask = await Context.ProjectTasks.FirstOrDefaultAsync(x => x.Id == _existingProjectTask.Id);
+        
+        dbProjectTask.Should().NotBeNull();
+        dbProjectTask.Id.Value.Should().Be(_existingProjectTask.Id.Value);
+        dbProjectTask.Name.Should().Be(request.Name);
+        dbProjectTask.EstimatedTime.Should().Be(request.EstimatedTime);
+        dbProjectTask.ProjectId.Should().Be(request.ProjectId);
     }
 
     [Fact]
@@ -145,9 +161,9 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        Context.Users.RemoveRange(Context.Users);
-        Context.Projects.RemoveRange(Context.Projects);
         Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
+        Context.Projects.RemoveRange(Context.Projects);
+        Context.Users.RemoveRange(Context.Users);
         await SaveChangesAsync();
     }
 }

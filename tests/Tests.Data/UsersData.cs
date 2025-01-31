@@ -27,6 +27,16 @@ public static class UsersData
         SecurityStamp = Guid.NewGuid().ToString()
     };
     
+    public static User MainUser2 = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "userName2@gmail.com",
+        UserName = "UserName2",
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        NormalizedEmail = "userName2@gmail.com".ToUpperInvariant(),
+        SecurityStamp = Guid.NewGuid().ToString()
+    };
+    
     public static User UserForDeletion = new User
     {
         Id = Guid.NewGuid(),

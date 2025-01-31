@@ -74,9 +74,8 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
         }
         catch (Exception exception)
         {
-            return new ProjectUnknownException(ProjectId.Empty(), exception);
+            return new ProjectUnknownException(entity.Id, exception);
         }
     }
 }
 
-//TODO: create UserProjectRole too

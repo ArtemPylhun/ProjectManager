@@ -2,10 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using API.DTOs;
 using Domain.Models.Projects;
+using Domain.Models.ProjectUsers;
 using Domain.Models.Roles;
 using Domain.Models.Users;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Tests.Common;
 using Tests.Data;
@@ -13,20 +13,19 @@ using Tests.Data;
 namespace Api.Tests.Integration.Projects;
 
 public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
-{    
+{
     private readonly User _mainUser;
-    private readonly Project _mainProject;
     private readonly Project _existingProject;
     private readonly Project _existingProject2;
+
 
     public ProjectsControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
         _mainUser = UsersData.MainUser;
-        _mainProject = ProjectsData.NewProject(_mainUser.Id, _mainUser.Id);
         _existingProject = ProjectsData.ExistingProject(_mainUser.Id, _mainUser.Id);
         _existingProject2 = ProjectsData.ExistingProject2(_mainUser.Id, _mainUser.Id);
     }
-    
+
     [Fact]
     public async Task ShouldCreateProject()
     {
@@ -59,7 +58,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         createdProject.CreatorId.Should().Be(request.CreatorId);
         createdProject.ClientId.Should().Be(request.ClientId);
     }
-    
+
     [Fact]
     public async Task ShouldNotCreateProjectBecauseClientNotFound()
     {
@@ -84,7 +83,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotCreateProjectBecauseCreatorNotFound()
     {
@@ -109,7 +108,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotCreateProjectBecauseAlreadyExists()
     {
@@ -151,12 +150,12 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         var response = await Client.PutAsJsonAsync("projects/update", request);
         //Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var createdProject = await response.ToResponseModel<ProjectDto>();
         createdProject.Id.Should().Be(_existingProject.Id.Value);
 
         var dbProject = await Context.Projects.FirstOrDefaultAsync(x => x.Id == _existingProject.Id);
-        
+
         dbProject.Should().NotBeNull();
         dbProject.Id.Value.Should().Be(_existingProject.Id.Value);
         dbProject.Name.Should().Be(request.Name);
@@ -164,7 +163,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         dbProject.ColorHex.Should().Be(request.ColorHex);
         dbProject.ClientId.Should().Be(request.ClientId);
     }
-    
+
     [Fact]
     public async Task ShouldNotUpdateProjectBecauseClientNotFound()
     {
@@ -184,7 +183,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotUpdateProjectBecauseIdNotFound()
     {
@@ -204,7 +203,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotUpdateProjectBecauseSuchProjectAlreadyExists()
     {
@@ -223,6 +222,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
+
     [Fact]
     public async Task ShouldDeleteProject()
     {
@@ -240,7 +240,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         var dbproject = await Context.Projects.FirstOrDefaultAsync(x => x.Id == _existingProject2.Id);
         dbproject.Should().BeNull();
     }
-    
+
     [Fact]
     public async Task ShouldNotDeleteProjectBecauseIdNotFound()
     {
@@ -254,11 +254,14 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
     public async Task InitializeAsync()
     {
         await Context.Users.AddAsync(_mainUser);
         await Context.Projects.AddAsync(_existingProject);
         await Context.Projects.AddAsync(_existingProject2);
+
+
         await SaveChangesAsync();
     }
 
