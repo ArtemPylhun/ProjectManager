@@ -28,7 +28,8 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         _existingProject = ProjectsData.ExistingProjectForProjectUser(_mainUser.Id, _mainUser.Id);
         _existingProjectUser = ProjectUsersData.ExistingProjectUser(_existingProject.Id, _mainUser.Id, _creatorRole.Id);
     }
-[Fact]
+
+    [Fact]
     public async Task ShouldCreateProjectUser()
     {
         // Arrange
@@ -39,9 +40,9 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         (
             ProjectId: projectId,
             UserId: userId,
-            RoleId:roleId
+            RoleId: roleId
         );
-        
+
         // Act
         var response = await Client.PostAsJsonAsync("projects/add-user-to-project", request);
 
@@ -66,7 +67,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
             UserId: userId,
             RoleId: _creatorRole.Id
         );
-        
+
         // Act
         var response = await Client.PostAsJsonAsync("projects/add-user-to-project", request);
 
@@ -74,7 +75,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
-    
+
     [Fact]
     public async Task ShouldNotCreateProjectUserBecauseProjectNotFound()
     {
@@ -87,7 +88,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
             UserId: userId,
             RoleId: _creatorRole.Id
         );
-        
+
         // Act
         var response = await Client.PostAsJsonAsync("projects/add-user-to-project", request);
 
@@ -95,7 +96,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotCreateProjectUserBecauseUserNotFound()
     {
@@ -108,7 +109,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
             UserId: userId,
             RoleId: _creatorRole.Id
         );
-        
+
         // Act
         var response = await Client.PostAsJsonAsync("projects/add-user-to-project", request);
 
@@ -116,7 +117,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotCreateProjectUserBecauseRoleNotFound()
     {
@@ -129,7 +130,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
             UserId: userId,
             RoleId: Guid.NewGuid()
         );
-        
+
         // Act
         var response = await Client.PostAsJsonAsync("projects/add-user-to-project", request);
 
@@ -137,7 +138,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldDeleteProjectUser()
     {
@@ -146,21 +147,21 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 
         // Act
         var response = await Client.DeleteAsync($"projects/remove-user-from-project/{projectUserId}");
-        
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
         var responseProjectUser = await response.ToResponseModel<ProjectUserDto>();
         responseProjectUser.Id.Should().Be(projectUserId.Value);
-        
+
         var dbProjectUser = await Context.ProjectUsers.FirstOrDefaultAsync(x => x.Id == projectUserId);
         dbProjectUser.Should().BeNull();
     }
-    
+
     [Fact]
     public async Task ShouldNotDeleteProjectUserBecauseIdNotFound()
     {
         // Arrange
-        var projectUserId = Guid.NewGuid(); 
+        var projectUserId = Guid.NewGuid();
 
         // Act
         var response = await Client.DeleteAsync($"projects/remove-user-from-project/{projectUserId}");
@@ -169,12 +170,14 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
     public async Task InitializeAsync()
     {
         await Context.Users.AddAsync(_mainUser);
         await Context.Projects.AddAsync(_existingProject);
         await Context.Projects.AddAsync(_existingProject2);
         await Context.Roles.AddAsync(_creatorRole);
+        await SaveChangesAsync();
         await Context.ProjectUsers.AddAsync(_existingProjectUser);
         await SaveChangesAsync();
     }

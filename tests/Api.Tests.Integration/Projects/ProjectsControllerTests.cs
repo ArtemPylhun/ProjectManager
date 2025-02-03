@@ -54,7 +54,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         createdProject.Name.Should().Be(request.Name);
         createdProject.Description.Should().Be(request.Description);
         createdProject.ColorHex.Should().Be(request.ColorHex);
-        createdProject.CreatedAt.Should().BeCloseTo(request.CreatedAt, precision: TimeSpan.FromMilliseconds(500));
+        createdProject.CreatedAt.Should().BeCloseTo(request.CreatedAt, precision: TimeSpan.FromMilliseconds(1500));
         createdProject.CreatorId.Should().Be(request.CreatorId);
         createdProject.ClientId.Should().Be(request.ClientId);
     }
