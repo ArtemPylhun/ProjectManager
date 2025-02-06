@@ -10,8 +10,7 @@ namespace Application.Users.Commands;
 
 public class LoginUserCommand : IRequest<Result<string, UserException>>
 {
-    public string? Email { get; init; }
-    public string? UserName { get; init; }
+    public string EmailOrUsername { get; init; }
     public required string Password { get; init; }
 }
 
@@ -36,10 +35,10 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
         LoginUserCommand request,
         CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByNameAsync(request.UserName);
+        var user = await _userManager.FindByNameAsync(request.EmailOrUsername);
         if (user == null)
         {
-            user = await _userManager.FindByEmailAsync(request.Email);
+            user = await _userManager.FindByEmailAsync(request.EmailOrUsername);
         }
 
         if (user == null)
@@ -58,16 +57,20 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
         if (roles.Count == 0)
         {
             await _userManager.AddToRoleAsync(user, "User");
+            roles = await _userManager.GetRolesAsync(user);
         }
-        roles = await _userManager.GetRolesAsync(user);
-        var userRoleForUser = await  _roleManager.FindByNameAsync(roles.First(x => x == "User"));
+        var roleForUser = await  _roleManager.FindByNameAsync(roles.First(x => x == "Admin"));
+        if (roleForUser == null)
+        {
+            roleForUser = await _roleManager.FindByNameAsync(roles.First(x => x == "User"));
+        }
 
-        if (userRoleForUser == null)
+        if (roleForUser == null)
         {
             return await Task.FromResult<Result<string, UserException>>(new RoleNotFound(user.Id));
         }
         
-        var token = _jwtProvider.GenerateToken(user, userRoleForUser);
+        var token = _jwtProvider.GenerateToken(user, roleForUser);
 
         if (!String.IsNullOrEmpty(token))
         {

@@ -23,8 +23,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
     {
         var input = new LoginUserCommand
         {
-            Email = request.Email,
-            UserName = request.UserName,
+            EmailOrUsername= request.EmailOrUsername,
             Password = request.Password
         };
 

@@ -224,8 +224,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         // Arrange
         var password = "Admin!23";
         var request = new UserLoginDto(
-            Email:  _mainUser.Email,
-            UserName: _mainUser.UserName,
+            EmailOrUsername: _mainUser.Email,
             Password: password
         );
 
@@ -243,11 +242,9 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
     {
         // Arrange
         var email = "notFoundEmail@gmail.com";
-        var userName = "notFoundUsername";
         var password = "Admin!23";
         var request = new UserLoginDto(
-            Email: email,
-            UserName: userName,
+            EmailOrUsername: email,
             Password: password
         );
 
@@ -267,8 +264,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         var userName = "notFoundUsername";
         var password = "wrongPassword!233";
         var request = new UserLoginDto(
-            Email: email,
-            UserName: userName,
+            EmailOrUsername: email,
             Password: password
         );
 

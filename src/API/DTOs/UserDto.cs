@@ -30,14 +30,7 @@ public record UserCreateDto(
 }
 
 public record UserLoginDto(
-    string? Email,
-    string? UserName,
+    string EmailOrUsername,
     string Password)
 {
-    public static UserLoginDto FromUserLoginDomainModel(User user)
-        => new(
-            Email: user.Email,
-            UserName: user.UserName,
-            Password: user.PasswordHash
-        );
 }
