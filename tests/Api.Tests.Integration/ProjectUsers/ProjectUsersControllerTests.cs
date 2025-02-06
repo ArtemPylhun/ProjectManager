@@ -146,7 +146,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         var projectUserId = _existingProjectUser.Id;
 
         // Act
-        var response = await Client.DeleteAsync($"projects/remove-user-from-project/{projectUserId}");
+        var response = await Client.DeleteAsync($"projects/remove-user-from-project/{projectUserId.Value}");
 
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
