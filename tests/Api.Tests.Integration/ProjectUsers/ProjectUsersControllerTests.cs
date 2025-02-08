@@ -187,6 +187,7 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         Context.ProjectUsers.RemoveRange(Context.ProjectUsers);
         Context.Projects.RemoveRange(Context.Projects);
         Context.Users.RemoveRange(Context.Users);
+        Context.UserRoles.RemoveRange(Context.UserRoles);
         Context.Roles.RemoveRange(Context.Roles);
         await SaveChangesAsync();
     }

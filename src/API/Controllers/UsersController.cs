@@ -1,29 +1,58 @@
 using API.DTOs;
 using Api.Modules.Errors;
-using Application.Common.Interfaces.Queries;
 using Application.Users.Commands;
+using Domain.Models.Users;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
 [Route("users")]
 [ApiController]
-public class UsersController(ISender sender, IUserQueries userQueries) : ControllerBase
+public class UsersController(ISender sender, UserManager<User> userManager) : ControllerBase
 {
     [HttpGet("get-all")]
-    public async Task<ActionResult<List<UserDto>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAll(CancellationToken cancellationToken)
     {
-        var users = await userQueries.GetAll(cancellationToken);
-        return users.Select(UserDto.FromDomainModel).ToList();
+        var entities = await userManager.Users.ToListAsync(cancellationToken);
+        return entities.Select(UserDto.FromDomainModel).ToList();
     }
-    
+
+    [HttpGet("{userId:guid}")]
+    public async Task<ActionResult<UserWithRolesDto>> GetByIdWithRoles([FromRoute] Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            return NotFound();
+
+        var roles = await userManager.GetRolesAsync(user);
+        return UserWithRolesDto.FromDomainModel(user, roles);
+    }
+
+    [HttpGet("get-all-with-roles")]
+    public async Task<ActionResult<IReadOnlyList<UserWithRolesDto>>> GetAllWithRoles(
+        CancellationToken cancellationToken)
+    {
+        var entities = userManager.Users.ToList();
+        var result = new List<UserWithRolesDto>();
+        foreach (var user in entities)
+        {
+            var roles = await userManager.GetRolesAsync(user);
+            result.Add(UserWithRolesDto.FromDomainModel(user, roles));
+        }
+
+        return result.ToList();
+    }
+
     [HttpPost("login")]
     public async Task<ActionResult> LoginUser([FromBody] UserLoginDto request, CancellationToken cancellationToken)
     {
         var input = new LoginUserCommand
         {
-            EmailOrUsername= request.EmailOrUsername,
+            EmailOrUsername = request.EmailOrUsername,
             Password = request.Password
         };
 
@@ -33,7 +62,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             u => Ok(u),
             e => e.ToObjectResult());
     }
-    
+
     [HttpPost("create")]
     public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateDto request,
         CancellationToken cancellationToken)
@@ -53,12 +82,12 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
     }
 
     [HttpPut("update")]
-    public async Task<ActionResult<UserDto>> Update([FromBody] UserDto request,
+    public async Task<ActionResult<UserDto>> Update([FromBody] UserUpdateDto request,
         CancellationToken cancellationToken)
     {
         var input = new UpdateUserCommand
         {
-            UserId = request.Id.Value,
+            UserId = request.Id,
             UserName = request.UserName,
             Email = request.Email,
             Password = request.Password
@@ -70,7 +99,27 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             user => UserDto.FromDomainModel(user),
             e => e.ToObjectResult());
     }
-    
+
+    [HttpPut("{userId:guid}/update-roles")]
+    public async Task<ActionResult> UpdateRoles([FromRoute] Guid userId, [FromBody] IList<string> roles,
+        CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            return NotFound();
+
+        var currentRoles = await userManager.GetRolesAsync(user);
+        var removeResult = await userManager.RemoveFromRolesAsync(user, currentRoles);
+        if (!removeResult.Succeeded)
+            return BadRequest("Failed to remove existing roles.");
+
+        var addResult = await userManager.AddToRolesAsync(user, roles);
+        if (!addResult.Succeeded)
+            return BadRequest("Failed to assign new roles.");
+
+        return Ok("Roles updated successfully.");
+    }
+
     [HttpDelete("delete/{userId:guid}")]
     public async Task<ActionResult<UserDto>> Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
     {

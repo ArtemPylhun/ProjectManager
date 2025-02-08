@@ -5,5 +5,5 @@ namespace Application.Common.Interfaces;
 
 public interface IJwtProvider
 {
-    string GenerateToken(User user, Role role);
+    string GenerateToken(User user, List<string> roles);
 }

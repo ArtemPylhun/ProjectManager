@@ -2,8 +2,11 @@ using API.DTOs;
 using Api.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Roles.Commands;
+using Domain.Models.Roles;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -11,12 +14,12 @@ namespace API.Controllers;
 
 [Route("roles")]
 [ApiController]
-public class RolesController(ISender sender, IRoleQueries roleQueries) : ControllerBase
+public class RolesController(ISender sender, RoleManager<Role> roleManager) : ControllerBase
 {
     [HttpGet("get-all")]
     public async Task<ActionResult<List<RoleDto>>> GetAll(CancellationToken cancellationToken)
     {
-        var roles = await roleQueries.GetAll(cancellationToken);
+        var roles = await roleManager.Roles.ToListAsync(cancellationToken);
         return roles.Select(RoleDto.FromDomainModel).ToList();
     }
     

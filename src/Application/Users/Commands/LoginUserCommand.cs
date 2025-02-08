@@ -56,21 +56,10 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
         var roles = await _userManager.GetRolesAsync(user);
         if (roles.Count == 0)
         {
-            await _userManager.AddToRoleAsync(user, "User");
-            roles = await _userManager.GetRolesAsync(user);
-        }
-        var roleForUser = await  _roleManager.FindByNameAsync(roles.First(x => x == "Admin"));
-        if (roleForUser == null)
-        {
-            roleForUser = await _roleManager.FindByNameAsync(roles.First(x => x == "User"));
-        }
-
-        if (roleForUser == null)
-        {
-            return await Task.FromResult<Result<string, UserException>>(new RoleNotFound(user.Id));
+            return await Task.FromResult<Result<string, UserException>>(new UserRolesNotFoundException(Guid.Empty));
         }
         
-        var token = _jwtProvider.GenerateToken(user, roleForUser);
+        var token = _jwtProvider.GenerateToken(user, roles.ToList());
 
         if (!String.IsNullOrEmpty(token))
         {

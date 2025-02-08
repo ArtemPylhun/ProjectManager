@@ -165,6 +165,7 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        Context.UserRoles.RemoveRange(Context.UserRoles);
         Context.Roles.RemoveRange(Context.Roles);
         Context.Users.RemoveRange(Context.Users);
         await SaveChangesAsync();

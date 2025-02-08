@@ -11,9 +11,9 @@ public static class UserErrorHandler
         {
             StatusCode = exception switch
             {
-                UserNotFoundException => StatusCodes
+                UserNotFoundException or UserRolesNotFoundException => StatusCodes
                     .Status404NotFound,
-                InvalidCredentialsException => StatusCodes.Status401Unauthorized,
+                InvalidCredentialsException or TokenExpiredException => StatusCodes.Status401Unauthorized,
                 UserWithNameAlreadyExistsException or UserWithEmailAlreadyExistsException => StatusCodes
                     .Status409Conflict,
                 UserUnknownException => StatusCodes.Status500InternalServerError,

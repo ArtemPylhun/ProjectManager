@@ -18,15 +18,20 @@ public class JwtProvider : IJwtProvider
         _options = options.Value;
     }
 
-    public string GenerateToken(User user, Role role)
+    public string GenerateToken(User user, List<string> roles)
     {
         var claims = new Claim[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.UserName),
-            new Claim("role", role.Name),
+           
         };
+        
+        foreach(var role in roles)
+        {
+            claims = claims.Append(new Claim(ClaimTypes.Role, role)).ToArray();
+        }
         var signingCredentials = new SigningCredentials(
             new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_options.SecretKey)),

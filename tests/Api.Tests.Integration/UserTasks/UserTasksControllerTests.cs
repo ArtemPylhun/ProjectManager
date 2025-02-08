@@ -136,6 +136,7 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
             await Context.Users.AddAsync(_mainUser);
             await SaveChangesAsync();
             await Context.Projects.AddAsync(_existingProject);
+            await SaveChangesAsync();
             await Context.ProjectTasks.AddAsync(_existingProjectTask);
             await Context.ProjectTasks.AddAsync(_existingProjectTask2);
             await SaveChangesAsync();
@@ -146,9 +147,11 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         public async Task DisposeAsync()
         {
             Context.UserTasks.RemoveRange(Context.UserTasks);
+            Context.UserRoles.RemoveRange(Context.UserRoles);
             Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
             Context.Projects.RemoveRange(Context.Projects);
             Context.Users.RemoveRange(Context.Users);
+            Context.Roles.RemoveRange(Context.Roles);
             await SaveChangesAsync();
         }
     }

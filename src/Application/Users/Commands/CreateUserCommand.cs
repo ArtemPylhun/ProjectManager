@@ -20,15 +20,12 @@ public class CreateUserCommandHandler
 {
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<Role> _roleManager;
-    private readonly IUserQueries _userQueries;
 
     public CreateUserCommandHandler(
         UserManager<User> userManager,
-        RoleManager<Role> roleManager,
-        IUserQueries userQueries)
+        RoleManager<Role> roleManager)
     {
         _userManager = userManager;
-        _userQueries = userQueries;
         _roleManager = roleManager;
     }
 
@@ -36,28 +33,30 @@ public class CreateUserCommandHandler
         CreateUserCommand request,
         CancellationToken cancellationToken)
     {
-        var existingUserWithUserName = await _userQueries.SearchByUserName(
-            request.UserName,
-            cancellationToken);
+        var existingUserWithUserName = await _userManager.FindByNameAsync(
+            request.UserName);
 
+        if (existingUserWithUserName != null)
+        {
+            return await Task.FromResult<Result<User, UserException>>(
+                new UserWithNameAlreadyExistsException(existingUserWithUserName.Id, existingUserWithUserName.UserName));
+        }
+        
+        var existingUserWithEmail = await _userManager.FindByEmailAsync(
+            request.Email);
 
-        return await existingUserWithUserName.Match(
-            un => Task.FromResult<Result<User, UserException>>(new UserWithNameAlreadyExistsException(un.Id, un.UserName)),
-            async () =>
-            {
-                var existingUserWithEmail = await _userQueries.SearchByEmail(
-                    request.Email,
-                    cancellationToken);
-                return await existingUserWithEmail.Match<Task<Result<User, UserException>>>(
-                    ue => Task.FromResult<Result<User, UserException>>(
-                        new UserWithEmailAlreadyExistsException(ue.Id, ue.Email)),
-                    async () => await CreateEntity(request, cancellationToken));
-            });
+        if (existingUserWithEmail != null)
+        {
+            return await Task.FromResult<Result<User, UserException>>(
+                new UserWithEmailAlreadyExistsException(existingUserWithEmail.Id, existingUserWithEmail.Email));
+
+        }
+
+        return await CreateEntity(request);
     }
-    
+
     private async Task<Result<User, UserException>> CreateEntity(
-        CreateUserCommand request,
-        CancellationToken cancellationToken)
+        CreateUserCommand request)
     {
         try
         {
@@ -71,16 +70,16 @@ public class CreateUserCommandHandler
             var userRole = await _roleManager.FindByNameAsync("User");
             if (userRole == null)
             {
-                await _roleManager.CreateAsync(new Role { Name = "User"});
+                await _roleManager.CreateAsync(new Role { Name = "User" });
             }
             await _userManager.AddToRoleAsync(user, "User");
-            
-            return Result<User,UserException>.FromIdentityResult<User, UserException>(entity, user, e => new UserUnknownException(user.Id, new Exception("User creation failed")));
+
+            return Result<User, UserException>.FromIdentityResult<User, UserException>(entity, user,
+                e => new UserUnknownException(user.Id, new Exception("User creation failed")));
         }
         catch (Exception exception)
         {
             return new UserUnknownException(Guid.Empty, exception);
         }
     }
-    
 }

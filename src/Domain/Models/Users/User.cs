@@ -15,4 +15,5 @@ public class User: IdentityUser<Guid>
     public ICollection<Project> CreatedProjects { get; set; } = new List<Project>();
     public ICollection<Project> ClientProjects { get; set; } = new List<Project>();
     public ICollection<EmailNotification> EmailNotifications { get; set; } = new List<EmailNotification>();
+    
 }

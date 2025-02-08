@@ -3,17 +3,12 @@ using Domain.Models.Users;
 namespace API.DTOs;
 
 public record UserDto(
-    Guid? Id,
-    string? Email,
-    string? UserName,
-    string? Password)
+    Guid Id,
+    string UserName,
+    string Email)
 {
     public static UserDto FromDomainModel(User user)
-        => new(
-            Id: user.Id,
-            Email: user.Email,
-            UserName: user.UserName,
-            Password: user.PasswordHash);
+        => new(user.Id, user.UserName, user.Email);
 }
 
 public record UserCreateDto(
@@ -21,16 +16,27 @@ public record UserCreateDto(
     string UserName,
     string Password)
 {
-    public static UserCreateDto FromUserCreateDomainModel(User user)
-        => new(
-            Email: user.Email,
-            UserName: user.UserName,
-            Password: user.PasswordHash
-        );
 }
+
+public record UserUpdateDto(
+    Guid Id,
+    string Email,
+    string UserName,
+    string Password)
+{ }
 
 public record UserLoginDto(
     string EmailOrUsername,
     string Password)
 {
+}
+
+public record UserWithRolesDto(
+    Guid Id,
+    string UserName,
+    string Email,
+    IList<string> Roles)
+{
+    public static UserWithRolesDto FromDomainModel(User user, IList<string> roles)
+        => new(user.Id, user.UserName, user.Email, roles);
 }

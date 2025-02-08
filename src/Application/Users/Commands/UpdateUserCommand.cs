@@ -18,43 +18,43 @@ public record UpdateUserCommand : IRequest<Result<User, UserException>>
 public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Result<User, UserException>>
 {
     private readonly UserManager<User> _userManager;
-    private readonly IUserQueries _userQueries;
 
-    public UpdateUserCommandHandler(UserManager<User> userManager, IUserQueries userQueries)
+    public UpdateUserCommandHandler(UserManager<User> userManager)
     {
         _userManager = userManager;
-        _userQueries = userQueries;
     }
 
     public async Task<Result<User, UserException>> Handle(UpdateUserCommand request,
         CancellationToken cancellationToken)
     {
-        var existingUser = await _userQueries.GetById(
-            request.UserId,
-            cancellationToken);
+        var existingUser = await _userManager.FindByIdAsync(
+            request.UserId.ToString());
 
-        return await existingUser.Match(
-            async ue =>
-            {
-                var existingUserWithUserName = await _userQueries.SearchByUserName(
-                    request.UserName,
-                    cancellationToken);
-                return await existingUserWithUserName.Match(
-                    un => Task.FromResult<Result<User, UserException>>(
-                        new UserWithNameAlreadyExistsException(un.Id, un.UserName)),
-                    async () =>
-                    {
-                        var existingUserWithEmail = await _userQueries.SearchByEmail(
-                            request.Email,
-                            cancellationToken);
-                        return await existingUserWithEmail.Match<Task<Result<User, UserException>>>(
-                            ue => Task.FromResult<Result<User, UserException>>(
-                                new UserWithEmailAlreadyExistsException(ue.Id, ue.Email)),
-                            async () => await UpdateEntity(request, ue));
-                    });
-            },
-            () => Task.FromResult<Result<User, UserException>>(new UserNotFoundException(request.UserId))
-        );
+        if (existingUser == null)
+        {
+            return await Task.FromResult<Result<User, UserException>>(new UserNotFoundException(request.UserId));
+        }
+        var existingUserWithUserName = await _userManager.FindByNameAsync(
+            request.UserName);
+
+        if (existingUserWithUserName != null && existingUserWithUserName.Id != existingUser.Id)
+        {
+            return await Task.FromResult<Result<User, UserException>>(
+                new UserWithNameAlreadyExistsException(existingUserWithUserName.Id, 
+                    existingUserWithUserName.UserName));
+        }
+        
+        var existingUserWithEmail = await _userManager.FindByEmailAsync(
+            request.Email);
+
+        if (existingUserWithEmail != null && existingUserWithEmail.Id != existingUser.Id)
+        {
+            return await Task.FromResult<Result<User, UserException>>(
+                new UserWithEmailAlreadyExistsException(existingUserWithEmail.Id, 
+                    existingUserWithEmail.Email));
+        }
+
+        return await UpdateEntity(request, existingUser);
     }
 
     private async Task<Result<User, UserException>> UpdateEntity(
