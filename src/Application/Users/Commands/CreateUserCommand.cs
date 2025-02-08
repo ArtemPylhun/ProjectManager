@@ -1,5 +1,4 @@
 using Application.Common;
-using Application.Common.Interfaces.Queries;
 using Application.Users.Exceptions;
 using Domain.Models.Roles;
 using Domain.Models.Users;
@@ -72,6 +71,7 @@ public class CreateUserCommandHandler
             {
                 await _roleManager.CreateAsync(new Role { Name = "User" });
             }
+            //TODO: Add seeder
             await _userManager.AddToRoleAsync(user, "User");
 
             return Result<User, UserException>.FromIdentityResult<User, UserException>(entity, user,

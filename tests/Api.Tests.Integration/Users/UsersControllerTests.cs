@@ -280,7 +280,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
     {
         // Arrange
         var testUser = _mainUser;
-        var newRoles = new List<string> { "User" };
+        var newRoles = new List<string> { "User", "Admin" };
 
         // Act
         var response = await Client.PutAsJsonAsync($"users/{testUser.Id}/update-roles", newRoles);

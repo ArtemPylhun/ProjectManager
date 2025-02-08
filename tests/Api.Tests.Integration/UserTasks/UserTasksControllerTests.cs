@@ -49,7 +49,7 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         responseUserTask.ProjectTaskId.Should().Be(request.ProjectTaskId);
         responseUserTask.UserId.Should().Be(request.UserId);
     }
-    
+
     [Fact]
     public async Task ShouldNotAddUserToProjectTaskBecauseProjectTaskNotFound()
     {
@@ -67,7 +67,7 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotAddUserToProjectTaskBecauseUserNotFound()
     {
@@ -85,7 +85,7 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task ShouldNotAddUserToProjectTaskBecauseAlreadyExists()
     {
@@ -101,15 +101,16 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
 
         // Assert
         response.IsSuccessStatusCode.Should().BeFalse();
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict); 
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
-    
+
     [Fact]
     public async Task ShouldRemoveUserFromProjectTask()
     {
         var existingUserTaskId = _existingUserTask.Id;
         // Act
-        var response = await Client.DeleteAsync($"project-tasks/remove-user-from-project-task/{existingUserTaskId.Value}");
+        var response =
+            await Client.DeleteAsync($"project-tasks/remove-user-from-project-task/{existingUserTaskId.Value}");
 
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
@@ -119,7 +120,7 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         var dbProjectUser = await Context.UserTasks.FirstOrDefaultAsync(x => x.Id == existingUserTaskId);
         dbProjectUser.Should().BeNull();
     }
-    
+
     [Fact]
     public async Task ShouldNotRemoveUserFromProjectTaskBecauseNotFound()
     {
@@ -130,7 +131,7 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     public async Task InitializeAsync()
         {
             await Context.Users.AddAsync(_mainUser);
@@ -144,14 +145,15 @@ public class UserTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
             await SaveChangesAsync();
         }
 
-        public async Task DisposeAsync()
-        {
-            Context.UserTasks.RemoveRange(Context.UserTasks);
-            Context.UserRoles.RemoveRange(Context.UserRoles);
-            Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
-            Context.Projects.RemoveRange(Context.Projects);
-            Context.Users.RemoveRange(Context.Users);
-            Context.Roles.RemoveRange(Context.Roles);
-            await SaveChangesAsync();
-        }
+    public async Task DisposeAsync()
+    {
+        Context.TimeEntries.RemoveRange(Context.TimeEntries);
+        Context.UserTasks.RemoveRange(Context.UserTasks);
+        Context.UserRoles.RemoveRange(Context.UserRoles);
+        Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
+        Context.Projects.RemoveRange(Context.Projects);
+        Context.Users.RemoveRange(Context.Users);
+        Context.Roles.RemoveRange(Context.Roles);
+        await SaveChangesAsync();
     }
+}
