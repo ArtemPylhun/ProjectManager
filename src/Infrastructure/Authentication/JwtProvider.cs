@@ -30,7 +30,7 @@ public class JwtProvider : IJwtProvider
         
         foreach(var role in roles)
         {
-            claims = claims.Append(new Claim(ClaimTypes.Role, role)).ToArray();
+            claims = claims.Append(new Claim("roles", role)).ToArray();
         }
         var signingCredentials = new SigningCredentials(
             new SymmetricSecurityKey(
