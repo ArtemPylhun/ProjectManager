@@ -16,10 +16,17 @@ namespace API.Controllers;
 [ApiController]
 public class RolesController(ISender sender, RoleManager<Role> roleManager) : ControllerBase
 {
-    [HttpGet("get-all")]
-    public async Task<ActionResult<List<RoleDto>>> GetAll(CancellationToken cancellationToken)
+    [HttpGet("get-general-roles")]
+    public async Task<ActionResult<List<RoleDto>>> GetGeneralRoles(CancellationToken cancellationToken)
     {
-        var roles = await roleManager.Roles.ToListAsync(cancellationToken);
+        var roles = await roleManager.Roles.Where(x => x.RoleGroup == RoleGroups.General).ToListAsync(cancellationToken);
+        return roles.Select(RoleDto.FromDomainModel).ToList();
+    }
+    
+    [HttpGet("get-project-roles")]
+    public async Task<ActionResult<List<RoleDto>>> GetProjectRoles(CancellationToken cancellationToken)
+    {
+        var roles = await roleManager.Roles.Where(x => x.RoleGroup == RoleGroups.Projects).ToListAsync(cancellationToken);
         return roles.Select(RoleDto.FromDomainModel).ToList();
     }
     

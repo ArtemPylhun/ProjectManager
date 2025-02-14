@@ -35,11 +35,10 @@ public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand,
     public async Task<Result<Project, ProjectException>> Handle(UpdateProjectCommand request,
         CancellationToken cancellationToken)
     {
-        var client = _userManager.FindByIdAsync(request.ClientId.ToString()).Result;
+        var client = await _userManager.FindByIdAsync(request.ClientId.ToString());
         if (client == null)
         {
-            return await Task.FromResult(
-                Result<Project, ProjectException>.Failure(new ClientNotFoundException(request.ClientId)));
+            return Result<Project, ProjectException>.Failure(new ClientNotFoundException(request.ClientId));
         }
 
         var projectId = new ProjectId(request.Id);
@@ -50,15 +49,15 @@ public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand,
             {
                 var existingProjectWithSameName = await _projectQueries.GetByName(request.Name, cancellationToken);
                 return await existingProjectWithSameName.Match(
-                    async p => await Task.FromResult(
-                        Result<Project, ProjectException>.Failure(new ProjectAlreadyExistsException(p.Id, p.Name))),
-                    async () => await UpdateEntity(p, request.Name, request.Description, request.ColorHex, request.ClientId, cancellationToken));
+                    async foundProject =>
+                        foundProject.Id != p.Id
+                            ? Result<Project, ProjectException>.Failure(new ProjectAlreadyExistsException(foundProject.Id, foundProject.Name))
+                            : await UpdateEntity(p, request.Name, request.Description, request.ColorHex, request.ClientId, cancellationToken),
+                    async () => await UpdateEntity(p, request.Name, request.Description, request.ColorHex, request.ClientId, cancellationToken)
+                );
             },
-        async () =>
-                await Task.FromResult(
-                    Result<Project, ProjectException>.Failure(new ProjectNotFoundException(projectId)))
-
-           );
+            async () => Result<Project, ProjectException>.Failure(new ProjectNotFoundException(projectId))
+        );
     }
 
     private async Task<Result<Project, ProjectException>> UpdateEntity(

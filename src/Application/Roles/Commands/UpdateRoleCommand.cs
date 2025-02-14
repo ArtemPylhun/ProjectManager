@@ -30,7 +30,7 @@ public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, Resul
         }
         
         var existingRoleName = _roleManager.FindByNameAsync(request.Name).Result;
-        if (existingRoleName != null)
+        if (existingRoleName != null && existingRoleName.Id != existingRole.Id)
         {
             return Task.FromResult(Result<Role, RoleException>.Failure(new RoleAlreadyExistsException(existingRole.Id)));
         }

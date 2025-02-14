@@ -9,6 +9,7 @@ namespace Application.Roles.Commands;
 public record CreateRoleCommand: IRequest<Result<Role, RoleException>>
 {
     public string Name { get; init; }
+    public RoleGroups RoleGroup { get; init; }
 }
 
 public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, Result<Role, RoleException>>
@@ -28,7 +29,7 @@ public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, Resul
             return Task.FromResult(Result<Role, RoleException>.Failure(new RoleAlreadyExistsException(existingRole.Id)));
         }
         
-        var role = new Role { Name = request.Name };
+        var role = new Role { Name = request.Name, RoleGroup = request.RoleGroup };
         var result = _roleManager.CreateAsync(role).Result;
         return Task.FromResult(Result<Role, RoleException>.FromIdentityResult<Role, RoleException>(result, role, e => new RoleUnknownException(role.Id, new Exception(e.ToString()))));
     }

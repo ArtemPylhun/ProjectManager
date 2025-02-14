@@ -11,7 +11,10 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
     public async Task<IReadOnlyList<Project>> GetAll(CancellationToken cancellationToken)
     {
         return await context.Projects
-            .AsNoTracking()
+            .AsNoTracking().Include(
+                x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers)
             .ToListAsync(cancellationToken);
     }
 

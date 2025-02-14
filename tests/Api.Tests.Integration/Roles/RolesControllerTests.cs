@@ -28,7 +28,8 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         var request = new RoleDto
         (
             Id: null,
-            Name: name
+            Name: name,
+            RoleGroups.General
         );
 
         // Act
@@ -49,7 +50,9 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         var role = new RoleDto
         (
             Id: null,
-            Name: _userRole.Name
+            Name: _userRole.Name,
+            RoleGroups.General
+
         );
 
         // Act
@@ -83,7 +86,9 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         var role = new RoleDto
         (
             Id: null,
-            Name: roleNotFound
+            Name: roleNotFound,
+            RoleGroups.General
+
         );
 
         // Act
@@ -105,7 +110,8 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         var request = new RoleDto
         (
             Id: role.Id,
-            Name: newName
+            Name: newName,
+            RoleGroups.General
         );
 
         var response = await Client.PutAsJsonAsync("roles/update", request);
@@ -127,7 +133,8 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         var request = new RoleDto
         (
             Id: Guid.NewGuid(),
-            Name: newName
+            Name: newName,
+            RoleGroups.General
         );
 
         var response = await Client.PutAsJsonAsync("roles/update", request);
@@ -146,7 +153,8 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         var request = new RoleDto
         (
             Id: _userRole.Id,
-            Name: _adminRole.Name
+            Name: _adminRole.Name,
+            RoleGroups.General
         );
 
         var response = await Client.PutAsJsonAsync("roles/update", request);

@@ -1,6 +1,7 @@
     using Domain.Models.Projects;
+    using Domain.Models.Users;
 
-namespace API.DTOs;
+    namespace API.DTOs;
 
 public record ProjectDto(
     Guid Id,
@@ -9,7 +10,9 @@ public record ProjectDto(
     string ColorHex,
     DateTime CreatedAt,
     Guid CreatorId,
-    Guid ClientId)
+    Guid ClientId,
+    User? Creator,
+    User? Client)
 {
     public static ProjectDto FromDomainModel(Project project)
      => new(
@@ -19,7 +22,9 @@ public record ProjectDto(
          ColorHex: project.ColorHex,
          CreatedAt: project.CreatedAt,
          CreatorId: project.CreatorId,
-         ClientId: project.ClientId);
+         ClientId: project.ClientId,
+         Creator: project.Creator,
+         Client: project.Client);
 }
 
 public record ProjectCreateDto(

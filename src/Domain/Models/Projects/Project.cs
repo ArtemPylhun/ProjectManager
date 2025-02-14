@@ -15,6 +15,7 @@ public class Project
     public Guid CreatorId { get; private set; }
     public User? Creator { get; }
     public string ColorHex { get; private set; }
+    //TODO: make client optional
     public Guid ClientId { get; private set; }
     public User? Client { get; }
 
