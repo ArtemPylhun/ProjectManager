@@ -10,6 +10,8 @@ public record UpdateRoleCommand : IRequest<Result<Role, RoleException>>
 {
     public Guid Id { get; init; }
     public string Name { get; init; }
+    
+    public RoleGroups RoleGroup { get; init; }
 }
 
 public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, Result<Role, RoleException>>
@@ -36,6 +38,7 @@ public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, Resul
         }
 
         existingRole.Name = request.Name;
+        existingRole.RoleGroup = request.RoleGroup;
         var result = _roleManager.UpdateAsync(existingRole).Result;
         return Task.FromResult(Result<Role, RoleException>.FromIdentityResult<Role, RoleException>(result, existingRole,
             e => new RoleUnknownException(existingRole.Id, new Exception(e.ToString()))));

@@ -16,6 +16,28 @@ namespace API.Controllers;
 [ApiController]
 public class RolesController(ISender sender, RoleManager<Role> roleManager) : ControllerBase
 {
+    [HttpGet("get-role-groups")]
+    public ActionResult<List<object>> GetRoleGroups()
+    {
+        var roleGroups = Enum.GetValues(typeof(RoleGroups))
+            .Cast<RoleGroups>()
+            .Select(roleGroup => new 
+            {
+                Id = (int)roleGroup,
+                Name = roleGroup.ToString()
+            })
+            .ToList();
+    
+        return Ok(roleGroups);
+    }
+    
+    [HttpGet("get-all")]
+    public async Task<ActionResult<List<RoleDto>>> GetAllRoles(CancellationToken cancellationToken)
+    {
+        var roles = await roleManager.Roles.ToListAsync(cancellationToken);
+        return roles.Select(RoleDto.FromDomainModel).ToList();
+    }
+    
     [HttpGet("get-general-roles")]
     public async Task<ActionResult<List<RoleDto>>> GetGeneralRoles(CancellationToken cancellationToken)
     {
@@ -31,12 +53,13 @@ public class RolesController(ISender sender, RoleManager<Role> roleManager) : Co
     }
     
     [HttpPost("create")]
-    public async Task<ActionResult<RoleDto>> Create([FromBody] RoleDto request,
+    public async Task<ActionResult<RoleDto>> Create([FromBody] RoleCreateDto request,
         CancellationToken cancellationToken)
     {
         var input = new CreateRoleCommand
         {
-            Name = request.Name
+            Name = request.Name,
+            RoleGroup = request.RoleGroup
         };
 
         var result = await sender.Send(input, cancellationToken);
@@ -53,7 +76,8 @@ public class RolesController(ISender sender, RoleManager<Role> roleManager) : Co
         var input = new UpdateRoleCommand
         {
             Id = request.Id.Value,
-            Name = request.Name
+            Name = request.Name,
+            RoleGroup = request.RoleGroup
         };
 
         var result = await sender.Send(input, cancellationToken);

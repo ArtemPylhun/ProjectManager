@@ -13,3 +13,7 @@ public record RoleDto(
             Name: role.Name,
             RoleGroup: role.RoleGroup);
 }
+
+public record RoleCreateDto(
+    string Name,
+    RoleGroups RoleGroup);
