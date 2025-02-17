@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Domain.Models.ProjectTasks;
 using Domain.Models.Users;
 
@@ -7,8 +8,10 @@ public class UserTask
 {
     public UserTaskId Id { get; }
     public ProjectTaskId ProjectTaskId { get; private set; }
+    [JsonIgnore]
     public ProjectTask? ProjectTask { get; }
     public Guid UserId { get; private set; }
+    [JsonIgnore]
     public User? User { get; }
 
     private UserTask(UserTaskId id, ProjectTaskId projectTaskId, Guid userId)

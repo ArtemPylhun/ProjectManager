@@ -35,7 +35,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId,
             _timeEntry.ProjectTaskId);
@@ -49,7 +49,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         createdTimeEntry.Description.Should().Be(request.Description);
         createdTimeEntry.StartTime.Should().BeCloseTo(request.StartTime, precision: TimeSpan.FromMilliseconds(500));
         createdTimeEntry.EndTime.Should().BeCloseTo(request.EndTime, precision: TimeSpan.FromMilliseconds(500));
-        createdTimeEntry.Hours.Should().Be(request.Hours);
+        createdTimeEntry.Minutes.Should().Be(request.Minutes);
         createdTimeEntry.UserId.Should().Be(request.UserId);
         createdTimeEntry.ProjectId.Should().Be(request.ProjectId);
         createdTimeEntry.ProjectTaskId.Should().Be(request.ProjectTaskId);
@@ -64,7 +64,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId,
             ProjectTaskId.New());
@@ -83,7 +83,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             ProjectId.New(),
             _timeEntry.ProjectTaskId);
@@ -102,7 +102,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             Guid.NewGuid(),
             _timeEntry.ProjectId,
             _timeEntry.ProjectTaskId);
@@ -121,7 +121,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.EndDate,
             _timeEntry.StartDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId,
             _timeEntry.ProjectTaskId);
@@ -172,7 +172,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId,
             _timeEntry.ProjectTaskId);
@@ -191,7 +191,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         dbTimeEntry.Description.Should().Be(request.Description);
         dbTimeEntry.StartDate.Should().BeCloseTo(request.StartTime, precision: TimeSpan.FromMilliseconds(500));
         dbTimeEntry.EndDate.Should().BeCloseTo(request.EndTime, precision: TimeSpan.FromMilliseconds(500));
-        dbTimeEntry.Hours.Should().Be(request.Hours);
+        dbTimeEntry.Minutes.Should().Be(request.Minutes);
         dbTimeEntry.UserId.Should().Be(request.UserId);
         dbTimeEntry.ProjectId.Should().Be(request.ProjectId);
         dbTimeEntry.ProjectTaskId.Should().Be(request.ProjectTaskId);
@@ -207,7 +207,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId,
             _timeEntry.ProjectTaskId);
@@ -228,7 +228,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.EndDate,
             _timeEntry.StartDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId,
             _timeEntry.ProjectTaskId);
@@ -249,7 +249,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             Guid.NewGuid(),
             _timeEntry.ProjectId,
             _timeEntry.ProjectTaskId);
@@ -270,7 +270,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             ProjectId.New(),
             _timeEntry.ProjectTaskId);
@@ -290,7 +290,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
-            _timeEntry.Hours,
+            _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId,
             ProjectTaskId.New());

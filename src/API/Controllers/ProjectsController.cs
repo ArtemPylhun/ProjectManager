@@ -2,6 +2,7 @@ using API.DTOs;
 using Api.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Projects.Commands;
+using Domain.Models.Projects;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,14 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
         return projects.Select(ProjectDto.FromDomainModel).ToList();
     }
     
+    [HttpGet("{projectId:guid}")]
+    public async Task<ActionResult<ProjectDto>> GetById([FromRoute] Guid projectId, CancellationToken cancellationToken)
+    {
+        var project = await projectQueries.GetById(new ProjectId(projectId), cancellationToken);
+        return project.Match<ActionResult<ProjectDto>>(
+            p => ProjectDto.FromDomainModel(p),
+            () => NotFound());
+    }
     [HttpPost("create")]
     public async Task<ActionResult<ProjectDto>> Create([FromBody] ProjectCreateDto request, CancellationToken cancellationToken)
     {

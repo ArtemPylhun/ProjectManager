@@ -17,10 +17,10 @@ public record UpdateTimeEntryCommand : IRequest<Result<TimeEntry, TimeEntryExcep
     public string Description { get; init; }
     public DateTime StartTime { get; init; }
     public DateTime EndTime { get; init; }
-    public int Hours { get; init; }
+    public int Minutes { get; init; }
     public Guid UserId { get; init; }
     public ProjectId ProjectId { get; init; }
-    public ProjectTaskId ProjectTaskId { get; init; }
+    public ProjectTaskId? ProjectTaskId { get; init; }
 }
 
 public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryCommand, Result<TimeEntry, TimeEntryException>>
@@ -70,16 +70,16 @@ public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryComm
                                 { 
                                     TimeEntry newTimeEntry = TimeEntry.New(TimeEntryId.New(), request.Description,
                                         request.StartTime,
-                                        request.EndTime, request.Hours, user.Id, p.Id, pt.Id);
+                                        request.EndTime, request.Minutes, user.Id, p.Id, pt.Id);
                                     return await UpdateEntity(entry,request.Description, request.StartTime,
-                                        request.EndTime, request.Hours, user.Id, p.Id, pt.Id, cancellationToken);
+                                        request.EndTime, request.Minutes, user.Id, p.Id, pt.Id, cancellationToken);
                                 },
                                 async () => await Task.FromResult(
                                     Result<TimeEntry, TimeEntryException>.Failure(
                                         new TimeEntryProjectNotFoundException(TimeEntryId.Empty(), p.Id))));
                         }
                         return await UpdateEntity(entry,request.Description, request.StartTime,
-                            request.EndTime, request.Hours, user.Id, p.Id, ProjectTaskId.Empty(), cancellationToken);
+                            request.EndTime, request.Minutes, user.Id, p.Id, ProjectTaskId.Empty(), cancellationToken);
                     },
                     async () => await Task.FromResult(
                         Result<TimeEntry, TimeEntryException>.Failure(
@@ -95,7 +95,7 @@ public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryComm
         string description,
         DateTime startTime,
         DateTime endTime,
-        int hours,
+        int minutes,
         Guid userId,
         ProjectId projectId,
         ProjectTaskId projectTaskId,
@@ -103,7 +103,7 @@ public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryComm
     {
         try
         {
-            entity.UpdateDetails(description, startTime, endTime, hours, userId, projectId, projectTaskId);
+            entity.UpdateDetails(description, startTime, endTime, minutes, userId, projectId, projectTaskId);
             var result = await _timeEntryRepository.Update(entity, cancellationToken);
             
             return result;

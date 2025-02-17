@@ -14,6 +14,8 @@ public record UpdateProjectTaskCommand: IRequest<Result<ProjectTask, ProjectTask
     public Guid ProjectId { get; init; }
     public string Name { get; init; }
     public int EstimatedTime { get; init; }
+    public string Description { get; init; }
+    public ProjectTask.ProjectTaskStatuses Status { get; init; }
 }
 
 public class
@@ -45,13 +47,13 @@ public class
                     async p =>
                     {
                         var existingProjectTasks = await _projectTaskQueries.GetAllByProjectId(p.Id, cancellationToken);
-                        if (existingProjectTasks.Any(task => task.Name == request.Name))
+                        if (existingProjectTasks.Where(x => x.Id.Value != pt.Id.Value).Any(task => task.Name == request.Name))
                         {
                             return await Task.FromResult(Result<ProjectTask, ProjectTaskException>.Failure(
                                 new ProjectTaskAlreadyExistsException(ProjectTaskId.Empty(), p.Name, request.Name)));
                         }
 
-                        return await UpdateEntity(pt, projectId, request.Name, request.EstimatedTime, cancellationToken);
+                        return await UpdateEntity(pt, projectId, request.Name, request.EstimatedTime, request.Description, request.Status, cancellationToken);
                     },
                     async () => await Task.FromResult(
                         Result<ProjectTask, ProjectTaskException>.Failure(
@@ -67,11 +69,13 @@ public class
         ProjectId projectId,
         string name,
         int estimatedTime,
+        string description,
+        ProjectTask.ProjectTaskStatuses status,
         CancellationToken cancellationToken)
     {
         try
         {
-            entity.UpdateDetails(projectId, name, estimatedTime);
+            entity.UpdateDetails(projectId, name, estimatedTime, description, status);
             var result = await _projectTaskRepository.Update(entity, cancellationToken);
             return result;
         }

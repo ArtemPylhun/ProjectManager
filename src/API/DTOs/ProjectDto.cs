@@ -1,7 +1,7 @@
-    using Domain.Models.Projects;
-    using Domain.Models.Users;
+using Domain.Models.Projects;
+using Domain.Models.Users;
 
-    namespace API.DTOs;
+namespace API.DTOs;
 
 public record ProjectDto(
     Guid Id,
@@ -12,19 +12,22 @@ public record ProjectDto(
     Guid CreatorId,
     Guid ClientId,
     User? Creator,
-    User? Client)
+    User? Client,
+    IList<ProjectUserDto>? ProjectUsers)
 {
-    public static ProjectDto FromDomainModel(Project project)
-     => new(
-         Id: project.Id.Value,
-         Name: project.Name,
-         Description: project.Description,
-         ColorHex: project.ColorHex,
-         CreatedAt: project.CreatedAt,
-         CreatorId: project.CreatorId,
-         ClientId: project.ClientId,
-         Creator: project.Creator,
-         Client: project.Client);
+    public static ProjectDto FromDomainModel(Project project) => new(
+        Id: project.Id.Value,
+        Name: project.Name,
+        Description: project.Description,
+        ColorHex: project.ColorHex,
+        CreatedAt: project.CreatedAt,
+        CreatorId: project.CreatorId,
+        ClientId: project.ClientId,
+        Creator: project.Creator,
+        Client: project.Client,
+        ProjectUsers: project.ProjectUsers
+            .Select(ProjectUserDto.FromDomainModel)
+            .ToList());
 }
 
 public record ProjectCreateDto(
@@ -35,7 +38,6 @@ public record ProjectCreateDto(
     Guid CreatorId,
     Guid ClientId)
 {
-   
 }
 
 public record ProjectUpdateDto(
@@ -45,5 +47,4 @@ public record ProjectUpdateDto(
     string ColorHex,
     Guid ClientId)
 {
-   
 }

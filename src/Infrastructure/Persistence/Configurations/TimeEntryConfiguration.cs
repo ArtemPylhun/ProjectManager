@@ -42,6 +42,6 @@ public class TimeEntryConfiguration : IEntityTypeConfiguration<TimeEntry>
             .HasConversion(new DateTimeUtcConverter())
             .HasDefaultValueSql("timezone('utc', now())");
         
-        builder.Property(x => x.Hours).IsRequired();
+        builder.Property(x => x.Minutes).IsRequired();
     }
 }

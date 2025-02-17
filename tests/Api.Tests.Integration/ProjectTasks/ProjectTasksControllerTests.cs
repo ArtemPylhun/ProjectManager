@@ -32,14 +32,14 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldCreateProjectTask()
     {
         //Arrange
-        var request = new ProjectTaskCreateDto(_existingProject.Id, _newProjectTask.Name, 1);
+        var request = new ProjectTaskCreateDto(_existingProject.Id.Value, _newProjectTask.Name, 1, "Description for task");
         //Act
         var response = await Client.PostAsJsonAsync("project-tasks/create", request);
         //Assert
         response.IsSuccessStatusCode.Should().BeTrue();
         
         var createdProjectTask = await response.ToResponseModel<ProjectTaskDto>();
-        createdProjectTask.Id.Value.Should().NotBeEmpty();
+        createdProjectTask.Id.Should().NotBeEmpty();
         createdProjectTask.Name.Should().Be(request.Name);
         createdProjectTask.EstimatedTime.Should().Be(request.EstimatedTime);
         createdProjectTask.ProjectId.Should().Be(request.ProjectId);
@@ -49,7 +49,7 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldNotCreateProjectTaskBecauseProjectNotFound()
     {
         //Arrange
-        var request = new ProjectTaskCreateDto(ProjectId.New(), "NewProjectTask", 1);
+        var request = new ProjectTaskCreateDto(ProjectId.New().Value, "NewProjectTask", 1, "Description for task");
         //Act
         var response = await Client.PostAsJsonAsync("project-tasks/create", request);
         //Assert
@@ -61,7 +61,7 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldNotCreateProjectTaskBecauseProjectTaskAlreadyExists()
     {
         //Arrange
-        var request = new ProjectTaskCreateDto(_existingProject.Id, _existingProjectTask.Name, 1);
+        var request = new ProjectTaskCreateDto(_existingProject.Id.Value, _existingProjectTask.Name, 1, "Description for task");
         //Act
         var response = await Client.PostAsJsonAsync("project-tasks/create", request);
         //Assert
@@ -73,14 +73,14 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldUpdateProjectTask()
     {
         //Arrange
-        var request = new ProjectTaskUpdateDto(_existingProjectTask.Id, _existingProject.Id, "NewProjectTask", 1);
+        var request = new ProjectTaskUpdateDto(_existingProjectTask.Id.Value, _existingProject.Id.Value, "NewProjectTask", 1, "Description for task",ProjectTask.ProjectTaskStatuses.New);
         //Act
         var response = await Client.PutAsJsonAsync("project-tasks/update", request);
         //Assert
         response.IsSuccessStatusCode.Should().BeTrue();
         
         var updatedProjectTask = await response.ToResponseModel<ProjectTaskDto>();
-        updatedProjectTask.Id.Value.Should().Be(_existingProjectTask.Id.Value);
+        updatedProjectTask.Id.Should().Be(_existingProjectTask.Id.Value);
 
         var dbProjectTask = await Context.ProjectTasks.FirstOrDefaultAsync(x => x.Id == _existingProjectTask.Id);
         
@@ -88,14 +88,14 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
         dbProjectTask.Id.Value.Should().Be(_existingProjectTask.Id.Value);
         dbProjectTask.Name.Should().Be(request.Name);
         dbProjectTask.EstimatedTime.Should().Be(request.EstimatedTime);
-        dbProjectTask.ProjectId.Should().Be(request.ProjectId);
+        dbProjectTask.ProjectId.Value.Should().Be(request.ProjectId);
     }
 
     [Fact]
     public async Task ShouldNotUpdateProjectTaskBecauseIdNotFound()
     {
         //Arrange
-        var request = new ProjectTaskUpdateDto(ProjectTaskId.New(), _existingProject.Id, "NewProjectTask", 1);
+        var request = new ProjectTaskUpdateDto(ProjectTaskId.New().Value, _existingProject.Id.Value, "NewProjectTask", 1, "Description for task",ProjectTask.ProjectTaskStatuses.New);
         //Act
         var response = await Client.PutAsJsonAsync("project-tasks/update", request);
         //Assert
@@ -107,7 +107,7 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldNotUpdateProjectTaskBecauseProjectNotFound()
     {
         //Arrange
-        var request = new ProjectTaskUpdateDto(_existingProjectTask.Id, ProjectId.New(), "NewProjectTask", 1);
+        var request = new ProjectTaskUpdateDto(_existingProjectTask.Id.Value, ProjectId.New().Value, "NewProjectTask", 1, "Description for task", ProjectTask.ProjectTaskStatuses.New);
         //Act
         var response = await Client.PutAsJsonAsync("project-tasks/update", request);
         //Assert
@@ -119,7 +119,7 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldNotUpdateProjectTaskBecauseProjectTaskAlreadyExists()
     {
         //Arrange
-        var request = new ProjectTaskUpdateDto(_existingProjectTask.Id, _existingProject.Id, _existingProjectTask2.Name, 1);
+        var request = new ProjectTaskUpdateDto(_existingProjectTask.Id.Value, _existingProject.Id.Value, _existingProjectTask2.Name, 1, "Description for task",ProjectTask.ProjectTaskStatuses.New);
         //Act
         var response = await Client.PutAsJsonAsync("project-tasks/update", request);
         //Assert
@@ -131,7 +131,7 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldDeleteProjectTask()
     {
         //Arrange
-        var projectTaskId = _existingProjectTask.Id;
+        var projectTaskId = _existingProjectTask.Id.Value;
         //Act
         var response = await Client.DeleteAsync($"project-tasks/delete/{projectTaskId}");
         //Assert

@@ -9,7 +9,7 @@ public class UpdateTimeEntryCommandValidator: AbstractValidator<UpdateTimeEntryC
         RuleFor(x => x.Description).NotEmpty().MaximumLength(1000);
         RuleFor(x => x.StartTime).NotEmpty();
         RuleFor(x => x.EndTime).NotEmpty();
-        RuleFor(x => x.Hours).NotEmpty();
+        RuleFor(x => x.Minutes).NotEmpty();
         RuleFor(x => x.UserId).NotEmpty();
         RuleFor(x => x.ProjectId).NotEmpty();
     }

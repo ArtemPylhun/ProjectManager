@@ -9,7 +9,7 @@ public record TimeEntryDto(
     string Description,
     DateTime StartTime,
     DateTime EndTime,
-    int Hours,
+    int Minutes,
     Guid UserId,
     ProjectId ProjectId,
     ProjectTaskId? ProjectTaskId
@@ -20,7 +20,7 @@ public record TimeEntryDto(
         timeEntry.Description,
         timeEntry.StartDate,
         timeEntry.EndDate,
-        timeEntry.Hours,
+        timeEntry.Minutes,
         timeEntry.UserId,
         timeEntry.ProjectId,
         timeEntry.ProjectTaskId);
@@ -30,7 +30,7 @@ public record TimeEntryCreateDto(
     string Description,
     DateTime StartTime,
     DateTime EndTime,
-    int Hours,
+    int Minutes,
     Guid UserId,
     ProjectId ProjectId,
     ProjectTaskId? ProjectTaskId);
@@ -40,7 +40,7 @@ public record TimeEntryUpdateDto(
     string Description,
     DateTime StartTime,
     DateTime EndTime,
-    int Hours,
+    int Minutes,
     Guid UserId,
     ProjectId ProjectId,
     ProjectTaskId? ProjectTaskId);

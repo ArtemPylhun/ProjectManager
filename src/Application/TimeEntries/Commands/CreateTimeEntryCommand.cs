@@ -17,7 +17,7 @@ public record CreateTimeEntryCommand : IRequest<Result<TimeEntry, TimeEntryExcep
     public string Description { get; init; }
     public DateTime StartTime { get; init; }
     public DateTime EndTime { get; init; }
-    public int Hours { get; init; }
+    public int Minutes { get; init; }
     public Guid UserId { get; init; }
     public ProjectId ProjectId { get; init; }
     public ProjectTaskId? ProjectTaskId { get; init; }
@@ -70,7 +70,7 @@ public class
                         {
                             TimeEntry newTimeEntry = TimeEntry.New(TimeEntryId.New(), request.Description,
                                 request.StartTime,
-                                request.EndTime, request.Hours, user.Id, p.Id, pt.Id);
+                                request.EndTime, request.Minutes, user.Id, p.Id, pt.Id);
                             return await CreateEntity(newTimeEntry, cancellationToken);
                         },
                         async () => await Task.FromResult(
@@ -79,7 +79,7 @@ public class
                 }
 
                 TimeEntry newTimeEntry = TimeEntry.New(TimeEntryId.New(), request.Description, request.StartTime,
-                    request.EndTime, request.Hours, user.Id, p.Id, ProjectTaskId.Empty());
+                    request.EndTime, request.Minutes, user.Id, p.Id, ProjectTaskId.Empty());
                 return await CreateEntity(newTimeEntry, cancellationToken);
             },
             async () => await Task.FromResult(

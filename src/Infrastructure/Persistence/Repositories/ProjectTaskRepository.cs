@@ -2,7 +2,6 @@ using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
 using Domain.Models.Projects;
 using Domain.Models.ProjectTasks;
-using Domain.Models.ProjectTasks;
 using Microsoft.EntityFrameworkCore;
 using Optional;
 
@@ -14,6 +13,8 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
     {
         return await context.ProjectTasks
             .AsNoTracking()
+            .Include(x => x.Project)
+            .Include(x => x.UsersTask)
             .ToListAsync(cancellationToken);
     }
 
@@ -22,6 +23,8 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
         return await context.ProjectTasks
             .AsNoTracking()
             .Where(x => x.ProjectId == projectId)
+            .Include(x => x.Project)
+            .Include(x => x.UsersTask)
             .ToListAsync(cancellationToken);
     }
 
@@ -29,6 +32,7 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
     {
         var entity = await context.ProjectTasks
             .AsNoTracking()
+            .Include(x => x.Project)
             .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
 
         return entity == null ? Option.None<ProjectTask>() : Option.Some(entity);
@@ -38,35 +42,40 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
     {
         var entity = await context.ProjectTasks
             .AsNoTracking()
+            .Include(x => x.Project)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         return entity == null ? Option.None<ProjectTask>() : Option.Some(entity);
     }
 
-    public async Task<ProjectTask> Add(ProjectTask project, CancellationToken cancellationToken)
+    public async Task<ProjectTask> Add(ProjectTask projectTask, CancellationToken cancellationToken)
     {
-        await context.ProjectTasks.AddAsync(project, cancellationToken);
+        await context.ProjectTasks.AddAsync(projectTask, cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return project;
+        return await context.ProjectTasks
+            .Include(x => x.Project)
+            .FirstAsync(x => x.Id == projectTask.Id, cancellationToken);
     }
 
-    public async Task<ProjectTask> Update(ProjectTask project, CancellationToken cancellationToken)
+    public async Task<ProjectTask> Update(ProjectTask projectTask, CancellationToken cancellationToken)
     {
-        context.ProjectTasks.Update(project);
+        context.ProjectTasks.Update(projectTask);
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return project;
+        return await context.ProjectTasks
+            .Include(x => x.Project)
+            .FirstAsync(x => x.Id == projectTask.Id, cancellationToken);
     }
 
-    public async Task<ProjectTask> Delete(ProjectTask project, CancellationToken cancellationToken)
+    public async Task<ProjectTask> Delete(ProjectTask projectTask, CancellationToken cancellationToken)
     {
-        context.ProjectTasks.Remove(project);
+        context.ProjectTasks.Remove(projectTask);
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return project;
+        return projectTask;
     }
 }

@@ -12,7 +12,6 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Name).IsRequired().HasColumnType("varchar(255)");
-
         
         builder.HasMany<IdentityRoleClaim<Guid>>()
             .WithOne()

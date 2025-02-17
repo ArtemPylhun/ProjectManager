@@ -13,6 +13,8 @@ public record CreateProjectTaskCommand : IRequest<Result<ProjectTask, ProjectTas
     public Guid ProjectId { get; init; }
     public string Name { get; init; }
     public int EstimatedTime { get; init; }
+    
+    public string Description { get; init; }
 }
 
 public class
@@ -42,7 +44,7 @@ public class
                 {
                    return await Task.FromResult(Result<ProjectTask,ProjectTaskException>.Failure(new ProjectTaskAlreadyExistsException(ProjectTaskId.Empty(), p.Name, request.Name)));
                 }
-                ProjectTask newProjectTask = ProjectTask.New(ProjectTaskId.New(), p.Id, request.Name, request.EstimatedTime);
+                ProjectTask newProjectTask = ProjectTask.New(ProjectTaskId.New(), p.Id, request.Name, request.EstimatedTime, request.Description);
                 return await CreateEntity(newProjectTask, cancellationToken);
             },
             () => Task.FromResult(Result<ProjectTask, ProjectTaskException>.Failure(new ProjectForTaskNotFoundException(ProjectTaskId.Empty(), projectId))));

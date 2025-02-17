@@ -27,7 +27,7 @@ public class TimeEntriesController(ISender sender, ITimeEntryQueries roleQueries
             Description = request.Description,
             StartTime = request.StartTime,
             EndTime = request.EndTime,
-            Hours = request.Hours,
+            Minutes = request.Minutes,
             UserId = request.UserId,
             ProjectId = request.ProjectId,
             ProjectTaskId = request.ProjectTaskId
@@ -50,7 +50,7 @@ public class TimeEntriesController(ISender sender, ITimeEntryQueries roleQueries
             Description = request.Description,
             StartTime = request.StartTime,
             EndTime = request.EndTime,
-            Hours = request.Hours,
+            Minutes = request.Minutes,
             UserId = request.UserId,
             ProjectId = request.ProjectId,
             ProjectTaskId = request.ProjectTaskId
