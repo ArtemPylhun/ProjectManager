@@ -13,7 +13,6 @@ public record CreateProjectTaskCommand : IRequest<Result<ProjectTask, ProjectTas
     public Guid ProjectId { get; init; }
     public string Name { get; init; }
     public int EstimatedTime { get; init; }
-    
     public string Description { get; init; }
 }
 

@@ -54,8 +54,7 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
             Id = request.Id,
             Name = request.Name,
             Description = request.Description,
-            ColorHex = request.ColorHex,
-            ClientId = request.ClientId,
+            ColorHex = request.ColorHex
         };
         
         var result = await sender.Send(input, cancellationToken);

@@ -91,7 +91,6 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
             UserId = request.Id,
             UserName = request.UserName,
             Email = request.Email,
-            Password = request.Password
         };
 
         var result = await sender.Send(input, cancellationToken);

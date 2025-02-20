@@ -15,7 +15,6 @@ public record UpdateProjectCommand : IRequest<Result<Project, ProjectException>>
     public string Name { get; init; }
     public string Description { get; init; }
     public string ColorHex { get; init; }
-    public Guid ClientId { get; init; }
 }
 
 public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand, Result<Project, ProjectException>>
@@ -35,11 +34,6 @@ public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand,
     public async Task<Result<Project, ProjectException>> Handle(UpdateProjectCommand request,
         CancellationToken cancellationToken)
     {
-        var client = await _userManager.FindByIdAsync(request.ClientId.ToString());
-        if (client == null)
-        {
-            return Result<Project, ProjectException>.Failure(new ClientNotFoundException(request.ClientId));
-        }
 
         var projectId = new ProjectId(request.Id);
         var existingProject = await _projectQueries.GetById(projectId, cancellationToken);
@@ -52,8 +46,8 @@ public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand,
                     async foundProject =>
                         foundProject.Id != p.Id
                             ? Result<Project, ProjectException>.Failure(new ProjectAlreadyExistsException(foundProject.Id, foundProject.Name))
-                            : await UpdateEntity(p, request.Name, request.Description, request.ColorHex, request.ClientId, cancellationToken),
-                    async () => await UpdateEntity(p, request.Name, request.Description, request.ColorHex, request.ClientId, cancellationToken)
+                            : await UpdateEntity(p, request.Name, request.Description, request.ColorHex, cancellationToken),
+                    async () => await UpdateEntity(p, request.Name, request.Description, request.ColorHex, cancellationToken)
                 );
             },
             async () => Result<Project, ProjectException>.Failure(new ProjectNotFoundException(projectId))
@@ -65,12 +59,11 @@ public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand,
         string name,
         string description,
         string colorHex,
-        Guid clientId,
         CancellationToken cancellationToken)
     {
         try
         {
-            entity.UpdateDetails(name,description,colorHex,clientId);
+            entity.UpdateDetails(name,description,colorHex);
             return await _projectRepository.Update(entity, cancellationToken);
         }
         catch (Exception exception)

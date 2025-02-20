@@ -37,15 +37,15 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            _timeEntry.ProjectId,
-            _timeEntry.ProjectTaskId);
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PostAsJsonAsync("time-entries/create", request);
         //Assert
         response.IsSuccessStatusCode.Should().BeTrue();
         
         var createdTimeEntry = await response.ToResponseModel<TimeEntryDto>();
-        createdTimeEntry.Id.Value.Should().NotBeEmpty();
+        createdTimeEntry.Id.Should().NotBeEmpty();
         createdTimeEntry.Description.Should().Be(request.Description);
         createdTimeEntry.StartTime.Should().BeCloseTo(request.StartTime, precision: TimeSpan.FromMilliseconds(500));
         createdTimeEntry.EndTime.Should().BeCloseTo(request.EndTime, precision: TimeSpan.FromMilliseconds(500));
@@ -66,8 +66,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            _timeEntry.ProjectId,
-            ProjectTaskId.New());
+            _timeEntry.ProjectId.Value,
+            ProjectTaskId.New().Value);
         //Act
         var response = await Client.PostAsJsonAsync("time-entries/create", request);
         //Assert
@@ -85,8 +85,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            ProjectId.New(),
-            _timeEntry.ProjectTaskId);
+            ProjectId.New().Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PostAsJsonAsync("time-entries/create", request);
         //Assert
@@ -104,8 +104,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             Guid.NewGuid(),
-            _timeEntry.ProjectId,
-            _timeEntry.ProjectTaskId);
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PostAsJsonAsync("time-entries/create", request);
         //Assert
@@ -123,8 +123,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
             _timeEntry.StartDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            _timeEntry.ProjectId,
-            _timeEntry.ProjectTaskId);
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PostAsJsonAsync("time-entries/create", request);
         //Assert
@@ -144,9 +144,10 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeTrue();
         
         var responseTimeEntry = await response.ToResponseModel<TimeEntryDto>();
-        responseTimeEntry.Id.Value.Should().Be(_timeEntry.Id.Value);
+        responseTimeEntry.Id.Should().Be(_timeEntry.Id.Value);
 
-        var dbTimeEntry = await Context.TimeEntries.FirstOrDefaultAsync(x => x.Id == _timeEntry.Id);
+        var dbTimeEntry = await Context.TimeEntries
+            .FirstOrDefaultAsync(x => x.Id == _timeEntry.Id);
         dbTimeEntry.Should().BeNull();
     }
     
@@ -168,21 +169,21 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         //Arrange
         var timeEntryId = _timeEntry.Id;
         var request = new TimeEntryUpdateDto(
-            _timeEntry.Id,
+            _timeEntry.Id.Value,
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            _timeEntry.ProjectId,
-            _timeEntry.ProjectTaskId);
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PutAsJsonAsync($"time-entries/update", request);
         //Assert
         response.IsSuccessStatusCode.Should().BeTrue();
         
         var createdTimeEntry = await response.ToResponseModel<TimeEntryDto>();
-        createdTimeEntry.Id.Value.Should().Be(_timeEntry.Id.Value);
+        createdTimeEntry.Id.Should().Be(_timeEntry.Id.Value);
 
         var dbTimeEntry = await Context.TimeEntries.FirstOrDefaultAsync(x => x.Id == _timeEntry.Id);
         
@@ -193,8 +194,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         dbTimeEntry.EndDate.Should().BeCloseTo(request.EndTime, precision: TimeSpan.FromMilliseconds(500));
         dbTimeEntry.Minutes.Should().Be(request.Minutes);
         dbTimeEntry.UserId.Should().Be(request.UserId);
-        dbTimeEntry.ProjectId.Should().Be(request.ProjectId);
-        dbTimeEntry.ProjectTaskId.Should().Be(request.ProjectTaskId);
+        dbTimeEntry.ProjectId.Value.Should().Be(request.ProjectId);
+        dbTimeEntry.ProjectTaskId.Value.Should().Be(request.ProjectTaskId.Value);
     }
     
     [Fact]
@@ -203,14 +204,14 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         //Arrange
         var timeEntryId = TimeEntryId.New();
         var request = new TimeEntryUpdateDto(
-            timeEntryId,
+            timeEntryId.Value,
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            _timeEntry.ProjectId,
-            _timeEntry.ProjectTaskId);
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PutAsJsonAsync($"time-entries/update", request);
         //Assert
@@ -222,16 +223,15 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldNotUpdateTimeEntryBecauseStartDateIsAfterEndDate()
     {
         //Arrange
-        var timeEntryId = _timeEntry.Id;
         var request = new TimeEntryUpdateDto(
-            _timeEntry.Id,
+            _timeEntry.Id.Value,
             _timeEntry.Description,
             _timeEntry.EndDate,
             _timeEntry.StartDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            _timeEntry.ProjectId,
-            _timeEntry.ProjectTaskId);
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PutAsJsonAsync($"time-entries/update", request);
         //Assert
@@ -245,14 +245,14 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         //Arrange
         var timeEntryId = _timeEntry.Id;
         var request = new TimeEntryUpdateDto(
-            _timeEntry.Id,
+            _timeEntry.Id.Value,
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             Guid.NewGuid(),
-            _timeEntry.ProjectId,
-            _timeEntry.ProjectTaskId);
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PutAsJsonAsync($"time-entries/update", request);
         //Assert
@@ -266,14 +266,14 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         //Arrange
         var timeEntryId = _timeEntry.Id;
         var request = new TimeEntryUpdateDto(
-            _timeEntry.Id,
+            _timeEntry.Id.Value,
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            ProjectId.New(),
-            _timeEntry.ProjectTaskId);
+            ProjectId.New().Value,
+            _timeEntry.ProjectTaskId.Value);
         //Act
         var response = await Client.PutAsJsonAsync($"time-entries/update", request);
         //Assert
@@ -286,14 +286,14 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     {
         //Arrange
         var request = new TimeEntryUpdateDto(
-            _timeEntry.Id,
+            _timeEntry.Id.Value,
             _timeEntry.Description,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
             _timeEntry.Minutes,
             _timeEntry.UserId,
-            _timeEntry.ProjectId,
-            ProjectTaskId.New());
+            _timeEntry.ProjectId.Value,
+            ProjectTaskId.New().Value);
         //Act
         var response = await Client.PutAsJsonAsync($"time-entries/update", request);
         //Assert

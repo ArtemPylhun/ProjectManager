@@ -12,7 +12,6 @@ public record UpdateUserCommand : IRequest<Result<User, UserException>>
     public required Guid UserId { get; init; }
     public required string Email { get; init; }
     public required string UserName { get; init; }
-    public required string Password { get; init; }
 }
 
 public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Result<User, UserException>>
@@ -65,7 +64,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
         {
             existingUser.Email = request.Email;
             existingUser.UserName = request.UserName;
-            existingUser.PasswordHash = _userManager.PasswordHasher.HashPassword(existingUser, request.Password);
+            //existingUser.PasswordHash = _userManager.PasswordHasher.HashPassword(existingUser, request.Password);
             existingUser.SecurityStamp = Guid.NewGuid().ToString();
 
             var result = await _userManager.UpdateAsync(existingUser);

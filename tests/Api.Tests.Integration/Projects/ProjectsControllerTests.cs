@@ -144,8 +144,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: _existingProject.Id.Value,
             Name: projectName,
             Description: projectDesc,
-            ColorHex: colorHex,
-            ClientId: _mainUser.Id);
+            ColorHex: colorHex);
         //Act
         var response = await Client.PutAsJsonAsync("projects/update", request);
         //Assert
@@ -161,27 +160,6 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         dbProject.Name.Should().Be(request.Name);
         dbProject.Description.Should().Be(request.Description);
         dbProject.ColorHex.Should().Be(request.ColorHex);
-        dbProject.ClientId.Should().Be(request.ClientId);
-    }
-
-    [Fact]
-    public async Task ShouldNotUpdateProjectBecauseClientNotFound()
-    {
-        //Arrange
-        var projectName = "TestProject2";
-        var projectDesc = "TestProjectDescription2";
-        var colorHex = "#8e574b";
-        var request = new ProjectUpdateDto(
-            Id: _existingProject.Id.Value,
-            Name: projectName,
-            Description: projectDesc,
-            ColorHex: colorHex,
-            ClientId: Guid.NewGuid());
-        //Act
-        var response = await Client.PutAsJsonAsync("projects/update", request);
-        //Assert
-        response.IsSuccessStatusCode.Should().BeFalse();
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -195,8 +173,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: Guid.NewGuid(),
             Name: projectName,
             Description: projectDesc,
-            ColorHex: colorHex,
-            ClientId: _mainUser.Id);
+            ColorHex: colorHex);
         //Act
         var response = await Client.PutAsJsonAsync("projects/update", request);
         //Assert
@@ -214,8 +191,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: _existingProject.Id.Value,
             Name: _existingProject2.Name,
             Description: projectDesc,
-            ColorHex: colorHex,
-            ClientId: _mainUser.Id);
+            ColorHex: colorHex);
         //Act
         var response = await Client.PutAsJsonAsync("projects/update", request);
         //Assert
@@ -227,7 +203,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldDeleteProject()
     {
         // Arrange
-        var projectId = _existingProject2.Id.Value;
+        var projectId = _existingProject2.Id;
 
         // Act
         var response = await Client.DeleteAsync($"projects/delete/{projectId}");

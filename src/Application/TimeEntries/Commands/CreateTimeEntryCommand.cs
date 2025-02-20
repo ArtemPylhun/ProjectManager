@@ -19,8 +19,8 @@ public record CreateTimeEntryCommand : IRequest<Result<TimeEntry, TimeEntryExcep
     public DateTime EndTime { get; init; }
     public int Minutes { get; init; }
     public Guid UserId { get; init; }
-    public ProjectId ProjectId { get; init; }
-    public ProjectTaskId? ProjectTaskId { get; init; }
+    public Guid ProjectId { get; init; }
+    public Guid? ProjectTaskId { get; init; }
 }
 
 public class
@@ -52,7 +52,9 @@ public class
                 Result<TimeEntry, TimeEntryException>.Failure(new TimeEntryUserNotFoundException(request.UserId)));
         }
 
-        var project = await _projectQueries.GetById(request.ProjectId, cancellationToken);
+        var projectId = new ProjectId(request.ProjectId);
+        var projectTaskId = new ProjectTaskId(request.ProjectTaskId.Value);
+        var project = await _projectQueries.GetById(projectId, cancellationToken);
         return await project.Match(
             async p =>
             {
@@ -65,7 +67,7 @@ public class
 
                 if (request.ProjectTaskId != null)
                 {
-                    var projectTask = await _projectTaskQueries.GetById(request.ProjectTaskId, cancellationToken);
+                    var projectTask = await _projectTaskQueries.GetById(projectTaskId, cancellationToken);
                     return await projectTask.Match(async pt =>
                         {
                             TimeEntry newTimeEntry = TimeEntry.New(TimeEntryId.New(), request.Description,

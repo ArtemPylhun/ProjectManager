@@ -11,8 +11,8 @@ public record ProjectDto(
     DateTime CreatedAt,
     Guid CreatorId,
     Guid ClientId,
-    User? Creator,
-    User? Client,
+    UserDto? Creator,
+    UserDto? Client,
     IList<ProjectUserDto>? ProjectUsers)
 {
     public static ProjectDto FromDomainModel(Project project) => new(
@@ -23,8 +23,8 @@ public record ProjectDto(
         CreatedAt: project.CreatedAt,
         CreatorId: project.CreatorId,
         ClientId: project.ClientId,
-        Creator: project.Creator,
-        Client: project.Client,
+        Creator: project.Creator == null ? null: UserDto.FromDomainModel(project.Creator),
+        Client: project.Client == null ? null: UserDto.FromDomainModel(project.Client),
         ProjectUsers: project.ProjectUsers
             .Select(ProjectUserDto.FromDomainModel)
             .ToList());
@@ -44,7 +44,6 @@ public record ProjectUpdateDto(
     Guid Id,
     string Name,
     string Description,
-    string ColorHex,
-    Guid ClientId)
+    string ColorHex)
 {
 }

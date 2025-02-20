@@ -39,12 +39,10 @@ public class Project
         Guid userId, string colorHex, Guid clientId) =>
         new(id, name, description, createdAt, userId, colorHex, clientId);
 
-    public void UpdateDetails(string name, string description, string colorHex, Guid clientId)
+    public void UpdateDetails(string name, string description, string colorHex)
     {
         Name = name;
         Description = description;
         ColorHex = colorHex;
-        ClientId = clientId;
-        
     }
 }

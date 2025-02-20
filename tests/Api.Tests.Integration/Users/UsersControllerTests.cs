@@ -136,8 +136,8 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         var request = new UserUpdateDto(
             Id: _mainUser.Id,
             Email: email,
-            UserName: userName,
-            Password: password);
+            UserName: userName
+            );
 
         // Act
         var response = await Client.PutAsJsonAsync("users/update", request);
@@ -163,8 +163,8 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         var request = new UserUpdateDto(
             Id: _newUser.Id,
             Email: email,
-            UserName: userName,
-            Password: password);
+            UserName: userName
+            );
 
         // Act
         var response = await Client.PutAsJsonAsync("users/update", request);
@@ -186,8 +186,8 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         var request = new UserUpdateDto(
             Id: _mainUser.Id,
             Email: _mainUser2.Email,
-            UserName: userName,
-            Password: password);
+            UserName: userName
+            );
 
         // Act
         var response = await Client.PutAsJsonAsync("users/update", request);
@@ -206,8 +206,8 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         var request = new UserUpdateDto(
             Id: _mainUser.Id,
             Email: email,
-            UserName: _mainUser.UserName,
-            Password: password);
+            UserName: _mainUser.UserName
+            );
 
         // Act
         var response = await Client.PutAsJsonAsync("users/update", request);

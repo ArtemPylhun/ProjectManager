@@ -1,6 +1,7 @@
 using System.Text;
 using Api.Modules;
 using Application;
+using Application.Common.Middleware;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Infrastructure;
@@ -90,6 +91,7 @@ builder.Services.AddCors(c =>
             .AllowAnyMethod());
 });
 var app = builder.Build();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

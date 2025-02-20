@@ -21,8 +21,8 @@ public record UserCreateDto(
 public record UserUpdateDto(
     Guid Id,
     string Email,
-    string UserName,
-    string Password)
+    string UserName
+    )
 { }
 
 public record UserLoginDto(

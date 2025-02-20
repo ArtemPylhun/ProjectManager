@@ -32,7 +32,7 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldCreateProjectTask()
     {
         //Arrange
-        var request = new ProjectTaskCreateDto(_existingProject.Id.Value, _newProjectTask.Name, 1, "Description for task");
+        var request = new ProjectTaskCreateDto(_existingProject.Id.Value, _newProjectTask.Name, 120, "Description for task3233212313");
         //Act
         var response = await Client.PostAsJsonAsync("project-tasks/create", request);
         //Assert

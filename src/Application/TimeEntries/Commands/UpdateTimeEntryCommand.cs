@@ -19,8 +19,8 @@ public record UpdateTimeEntryCommand : IRequest<Result<TimeEntry, TimeEntryExcep
     public DateTime EndTime { get; init; }
     public int Minutes { get; init; }
     public Guid UserId { get; init; }
-    public ProjectId ProjectId { get; init; }
-    public ProjectTaskId? ProjectTaskId { get; init; }
+    public Guid ProjectId { get; init; }
+    public Guid? ProjectTaskId { get; init; }
 }
 
 public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryCommand, Result<TimeEntry, TimeEntryException>>
@@ -50,10 +50,12 @@ public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryComm
         var existingTimeEntryId = new TimeEntryId(request.Id.Value);
         var existingTimeEntry = await _timeEntryQueries.GetById(existingTimeEntryId, cancellationToken);
 
+        var projectId = new ProjectId(request.ProjectId);
+        var projectTaskId = new ProjectTaskId(request.ProjectTaskId.Value);
         return await existingTimeEntry.Match(
             async entry =>
             {
-                var project = await _projectQueries.GetById(request.ProjectId, cancellationToken);
+                var project = await _projectQueries.GetById(projectId, cancellationToken);
                 return await project.Match(
                     async p =>
                     {
@@ -65,12 +67,9 @@ public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryComm
                         }
                         if (request.ProjectTaskId != null)
                         {
-                            var projectTask = await _projectTaskQueries.GetById(request.ProjectTaskId, cancellationToken);
+                            var projectTask = await _projectTaskQueries.GetById(projectTaskId, cancellationToken);
                             return await projectTask.Match(async pt =>
                                 { 
-                                    TimeEntry newTimeEntry = TimeEntry.New(TimeEntryId.New(), request.Description,
-                                        request.StartTime,
-                                        request.EndTime, request.Minutes, user.Id, p.Id, pt.Id);
                                     return await UpdateEntity(entry,request.Description, request.StartTime,
                                         request.EndTime, request.Minutes, user.Id, p.Id, pt.Id, cancellationToken);
                                 },

@@ -11,8 +11,8 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
     public async Task<IReadOnlyList<Project>> GetAll(CancellationToken cancellationToken)
     {
         return await context.Projects
-            .AsNoTracking().Include(
-                x => x.Creator)
+            .AsNoTracking()
+            .Include(x => x.Creator)
             .Include(x => x.Client)
             .Include(x => x.ProjectUsers)
             .ToListAsync(cancellationToken);
@@ -23,6 +23,9 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
         return await context.Projects
             .AsNoTracking()
             .Where(x => x.CreatorId == userId)
+            .Include(x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers)
             .ToListAsync(cancellationToken);
     }
 
@@ -30,6 +33,9 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
     {
         var entity = await context.Projects
             .AsNoTracking()
+            .Include(x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers)
             .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
 
         return entity == null ? Option.None<Project>() : Option.Some(entity);
@@ -39,6 +45,9 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
     {
         var entity = await context.Projects
             .AsNoTracking()
+            .Include(x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         return entity == null ? Option.None<Project>() : Option.Some(entity);
@@ -50,7 +59,11 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return project;
+        return await context.Projects
+            .Include(x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers)
+            .FirstAsync(x => x.Id == project.Id, cancellationToken);
     }
 
     public async Task<Project> Update(Project project, CancellationToken cancellationToken)
@@ -59,7 +72,11 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return project;
+        return await context.Projects
+            .Include(x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers)
+            .FirstAsync(x => x.Id == project.Id, cancellationToken);
     }
 
     public async Task<Project> Delete(Project project, CancellationToken cancellationToken)

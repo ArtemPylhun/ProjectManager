@@ -5,25 +5,31 @@ using Domain.Models.TimeEntries;
 namespace API.DTOs;
 
 public record TimeEntryDto(
-    TimeEntryId Id,
+    Guid Id,
     string Description,
     DateTime StartTime,
     DateTime EndTime,
     int Minutes,
     Guid UserId,
-    ProjectId ProjectId,
-    ProjectTaskId? ProjectTaskId
+    UserDto? User,
+    Guid ProjectId,
+    ProjectDto? Project,
+    Guid? ProjectTaskId,
+    ProjectTaskDto? ProjectTask
 )
 {
     public static TimeEntryDto FromDomainModel(TimeEntry timeEntry) => new(
-        timeEntry.Id,
-        timeEntry.Description,
-        timeEntry.StartDate,
-        timeEntry.EndDate,
-        timeEntry.Minutes,
-        timeEntry.UserId,
-        timeEntry.ProjectId,
-        timeEntry.ProjectTaskId);
+        Id: timeEntry.Id.Value,
+        Description: timeEntry.Description,
+        StartTime: timeEntry.StartDate,
+        EndTime: timeEntry.EndDate,
+        Minutes: timeEntry.Minutes,
+        UserId: timeEntry.UserId,
+        User: timeEntry.User == null ? null : UserDto.FromDomainModel(timeEntry.User),
+        ProjectId: timeEntry.ProjectId.Value,
+        Project: timeEntry.Project == null ? null : ProjectDto.FromDomainModel(timeEntry.Project),
+        ProjectTaskId: timeEntry.ProjectTaskId!.Value,
+        ProjectTask: timeEntry.ProjectTask == null ? null : ProjectTaskDto.FromDomainModel(timeEntry.ProjectTask));
 }
 
 public record TimeEntryCreateDto(
@@ -32,16 +38,16 @@ public record TimeEntryCreateDto(
     DateTime EndTime,
     int Minutes,
     Guid UserId,
-    ProjectId ProjectId,
-    ProjectTaskId? ProjectTaskId);
+    Guid ProjectId,
+    Guid? ProjectTaskId);
 
 public record TimeEntryUpdateDto(
-    TimeEntryId? Id,
+    Guid? Id,
     string Description,
     DateTime StartTime,
     DateTime EndTime,
     int Minutes,
     Guid UserId,
-    ProjectId ProjectId,
-    ProjectTaskId? ProjectTaskId);
+    Guid ProjectId,
+    Guid? ProjectTaskId);
     

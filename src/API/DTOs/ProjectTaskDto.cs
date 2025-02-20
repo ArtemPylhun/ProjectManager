@@ -20,7 +20,7 @@ public static ProjectTaskDto FromDomainModel(
         Name: projectTask.Name,
         EstimatedTime: projectTask.EstimatedTime,
         Description: projectTask.Description,
-        Project: ProjectDto.FromDomainModel(projectTask.Project),
+        Project: projectTask.Project == null ? null : ProjectDto.FromDomainModel(projectTask.Project),
         Status: projectTask.Status,
         UsersTask: projectTask.UsersTask.Select(UserTaskDto.FromDomainModel).ToList());
 }

@@ -33,6 +33,7 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
         var entity = await context.ProjectTasks
             .AsNoTracking()
             .Include(x => x.Project)
+            .Include(x => x.UsersTask)
             .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
 
         return entity == null ? Option.None<ProjectTask>() : Option.Some(entity);
@@ -43,6 +44,7 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
         var entity = await context.ProjectTasks
             .AsNoTracking()
             .Include(x => x.Project)
+            .Include(x => x.UsersTask)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         return entity == null ? Option.None<ProjectTask>() : Option.Some(entity);
@@ -56,6 +58,7 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
 
         return await context.ProjectTasks
             .Include(x => x.Project)
+            .Include(x => x.UsersTask)
             .FirstAsync(x => x.Id == projectTask.Id, cancellationToken);
     }
 
@@ -67,6 +70,7 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
 
         return await context.ProjectTasks
             .Include(x => x.Project)
+            .Include(x => x.UsersTask)
             .FirstAsync(x => x.Id == projectTask.Id, cancellationToken);
     }
 
