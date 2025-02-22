@@ -9,7 +9,7 @@ public class UpdateProjectCommandValidator: AbstractValidator<UpdateProjectComma
     {
         RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(30);
-        RuleFor(x => x.Description).NotEmpty().MaximumLength(150);
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(1000);
         RuleFor(x => x.ColorHex).NotEmpty().Must(x => x.StartsWith("#"))
             .WithMessage("Color must be written in a form of #RRGGBB").Matches(@"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")
             .WithMessage("Color must be written in a form of #RRGGBB");

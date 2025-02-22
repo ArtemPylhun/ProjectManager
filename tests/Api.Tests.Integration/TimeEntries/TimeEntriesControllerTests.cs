@@ -15,12 +15,14 @@ namespace Api.Tests.Integration.TimeEntries;
 public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
 {
     private readonly User _mainUser2;
+    private readonly User _mainUser1;
     private readonly Project _project;
     private readonly ProjectTask _projectTask;
     private readonly TimeEntry _timeEntry;
 
     public TimeEntriesControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
+        _mainUser1 = UsersData.MainUser;
         _mainUser2 = UsersData.MainUser2;
         _project = ProjectsData.ExistingProject2(_mainUser2.Id, _mainUser2.Id);
         _projectTask = ProjectTasksData.ExistingProjectTask(_project.Id);
@@ -170,11 +172,11 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         var timeEntryId = _timeEntry.Id;
         var request = new TimeEntryUpdateDto(
             _timeEntry.Id.Value,
-            _timeEntry.Description,
+            "New time entry",
             _timeEntry.StartDate,
             _timeEntry.EndDate,
             _timeEntry.Minutes,
-            _timeEntry.UserId,
+            _mainUser1.Id,
             _timeEntry.ProjectId.Value,
             _timeEntry.ProjectTaskId.Value);
         //Act
@@ -304,6 +306,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     public async Task InitializeAsync()
     {
         await Context.Users.AddAsync(_mainUser2);
+        await Context.Users.AddAsync(_mainUser1);
         await Context.Projects.AddAsync(_project);
         await Context.ProjectTasks.AddAsync(_projectTask);
         await Context.TimeEntries.AddAsync(_timeEntry);

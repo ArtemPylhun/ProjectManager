@@ -8,7 +8,7 @@ public class CreateProjectCommandValidator : AbstractValidator<CreateProjectComm
     public CreateProjectCommandValidator()
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(30);
-        RuleFor(x => x.Description).NotEmpty().MaximumLength(150);
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(1000);
         RuleFor(x => x.CreatorId).NotEmpty();
         RuleFor(x => x.ClientId).NotEmpty(); //TODO maybe not needed
         RuleFor(x => x.ColorHex).NotEmpty().Must(x => x.StartsWith("#"))

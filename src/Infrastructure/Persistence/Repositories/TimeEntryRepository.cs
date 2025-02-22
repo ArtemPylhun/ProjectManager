@@ -98,22 +98,24 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
 
     public async Task<TimeEntry> Update(TimeEntry timeEntry, CancellationToken cancellationToken)
     {
-        context.ChangeTracker.Clear();
-        context.TimeEntries.Update(timeEntry);
+        var existingEntry = context.TimeEntries.Find(timeEntry.Id);
+        if (existingEntry == null)
+        {
+            context.TimeEntries.Add(timeEntry); // If not found, add as new
+        }
+        else
+        {
+            context.Entry(existingEntry).CurrentValues.SetValues(timeEntry); // Update tracked entity
+        }
 
         await context.SaveChangesAsync(cancellationToken);
 
-        var entry = context.Entry(timeEntry);
-
-        foreach (var navigation in entry.Navigations)
-        {
-            if (!navigation.IsLoaded)
-            {
-                await navigation.LoadAsync(cancellationToken);
-            }
-        }
-
-        return timeEntry;
+        // Reload the entity to ensure it reflects the database state
+        return await context.TimeEntries
+            .Include(x => x.Project)
+            .Include(x => x.ProjectTask)
+            .Include(x => x.User)
+            .FirstAsync(x => x.Id == timeEntry.Id, cancellationToken);
     }
 
     public async Task<TimeEntry> Delete(TimeEntry timeEntry, CancellationToken cancellationToken)
