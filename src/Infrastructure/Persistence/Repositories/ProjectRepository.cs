@@ -17,15 +17,20 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
             .Include(x => x.ProjectUsers)
             .ToListAsync(cancellationToken);
     }
-
+    
+    public async Task<IReadOnlyList<Project>> GetAllByClient(Guid userId, CancellationToken cancellationToken)
+    {
+        return await context.Projects
+            .AsNoTracking()
+            .Where(x => x.ClientId == userId)
+            .ToListAsync(cancellationToken);
+    }
+    
     public async Task<IReadOnlyList<Project>> GetAllByCreator(Guid userId, CancellationToken cancellationToken)
     {
         return await context.Projects
             .AsNoTracking()
             .Where(x => x.CreatorId == userId)
-            .Include(x => x.Creator)
-            .Include(x => x.Client)
-            .Include(x => x.ProjectUsers)
             .ToListAsync(cancellationToken);
     }
 

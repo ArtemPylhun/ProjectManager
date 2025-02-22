@@ -23,3 +23,5 @@ public class UserRolesNotFoundException(Guid id) : UserException(id, "This user 
 public class TokenExpiredException() : UserException(Guid.Empty, "Token expired!");
     
 public class InvalidTokenException() : UserException(Guid.Empty, "Invalid token!");
+
+public class UserAlreadyUsedInProject(Guid id) : UserException(id, "This User is already used in projects!");
