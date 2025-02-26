@@ -7,6 +7,7 @@ public interface IProjectQueries
 {
     Task<IReadOnlyList<Project>> GetAll(CancellationToken cancellationToken);
     Task<IReadOnlyList<Project>> GetAllByCreator(Guid userId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Project>> GetAllByUserId(Guid userId, CancellationToken cancellationToken);
     Task<Option<Project>> GetByName(string name, CancellationToken cancellationToken);
     Task<Option<Project>> GetById(ProjectId id, CancellationToken cancellationToken);
 

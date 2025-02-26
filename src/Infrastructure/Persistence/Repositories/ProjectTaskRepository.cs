@@ -28,6 +28,16 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<ProjectTask>> GetAllByUserId(Guid userId, CancellationToken cancellationToken)
+    {
+        return await context.ProjectTasks
+            .AsNoTracking()
+            .Where(x => x.Project!.ProjectUsers.Any(pu => pu.UserId == userId))
+            .Include(x => x.Project)
+            .Include(x => x.UsersTask)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Option<ProjectTask>> SearchByName(string name, CancellationToken cancellationToken)
     {
         var entity = await context.ProjectTasks

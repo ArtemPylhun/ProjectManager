@@ -49,10 +49,6 @@ public static class ConfigurePersistence
 
     private static void AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<EmailNotificationRepository>();
-        services.AddScoped<IEmailNotificationRepository>(provider => provider.GetRequiredService<EmailNotificationRepository>());
-        services.AddScoped<IEmailNotificationQueries>(provider => provider.GetRequiredService<EmailNotificationRepository>());
-
         services.AddScoped<ProjectRepository>();
         services.AddScoped<IProjectRepository>(provider => provider.GetRequiredService<ProjectRepository>());
         services.AddScoped<IProjectQueries>(provider => provider.GetRequiredService<ProjectRepository>());

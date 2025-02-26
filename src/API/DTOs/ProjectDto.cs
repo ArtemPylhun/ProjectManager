@@ -44,6 +44,7 @@ public record ProjectUpdateDto(
     Guid Id,
     string Name,
     string Description,
-    string ColorHex)
+    string ColorHex,
+    Guid ClientId)
 {
 }

@@ -19,6 +19,13 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
         return projects.Select(ProjectDto.FromDomainModel).ToList();
     }
     
+    [HttpGet("get-all-by-user-id/{userId:guid}")]
+    public async Task<ActionResult<List<ProjectDto>>> GetAllByUserId([FromRoute] Guid userId, CancellationToken cancellationToken)
+    {
+        var projects = await projectQueries.GetAllByUserId(userId, cancellationToken);
+        return projects.Select(ProjectDto.FromDomainModel).ToList();
+    }
+    
     [HttpGet("{projectId:guid}")]
     public async Task<ActionResult<ProjectDto>> GetById([FromRoute] Guid projectId, CancellationToken cancellationToken)
     {
@@ -54,7 +61,8 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
             Id = request.Id,
             Name = request.Name,
             Description = request.Description,
-            ColorHex = request.ColorHex
+            ColorHex = request.ColorHex,
+            ClientId = request.ClientId
         };
         
         var result = await sender.Send(input, cancellationToken);

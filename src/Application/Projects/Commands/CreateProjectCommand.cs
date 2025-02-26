@@ -3,6 +3,8 @@ using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
 using Application.Projects.Exceptions;
 using Domain.Models.Projects;
+using Domain.Models.ProjectUsers;
+using Domain.Models.Roles;
 using Domain.Models.Users;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -23,18 +25,30 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
     private readonly UserManager<User> _userManager;
     private readonly IProjectQueries _projectQueries;
     private readonly IProjectRepository _projectRepository;
+    private readonly IProjectUserRepository _projectUserReposiory;
+    private readonly RoleManager<Role> _roleManager;
 
     public CreateProjectCommandHandler(UserManager<User> userManager, IProjectQueries projectQueries,
-        IProjectRepository projectRepository)
+        IProjectRepository projectRepository, IProjectUserRepository projectUserReposiory, RoleManager<Role> roleManager)
     {
         _userManager = userManager;
         _projectQueries = projectQueries;
         _projectRepository = projectRepository;
+        _projectUserReposiory = projectUserReposiory;
+        _roleManager = roleManager;
     }
 
     public async Task<Result<Project, ProjectException>> Handle(CreateProjectCommand request,
         CancellationToken cancellationToken)
     {
+        var roles = _roleManager.Roles.Where(x => x.RoleGroup == RoleGroups.Projects).ToList();
+        if (roles.Count == 0)
+        {
+            return await Task.FromResult(
+                Result<Project, ProjectException>.Failure(new RolesNotFoundException()));
+        }
+        
+        
         var creator = _userManager.FindByIdAsync(request.CreatorId.ToString()).Result;
         if (creator == null)
         {
@@ -58,18 +72,20 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
             {
                 Project newProject = Project.New(ProjectId.New(), request.Name, request.Description, DateTime.UtcNow,
                     request.CreatorId, request.ColorHex, request.ClientId);
-                return await CreateEntity(newProject, cancellationToken);
+                return await CreateEntity(newProject, roles, cancellationToken);
             });
     }
 
     private async Task<Result<Project, ProjectException>> CreateEntity(
         Project entity,
+        List<Role> roles,
         CancellationToken cancellationToken)
     {
         try
         {
             var result = await _projectRepository.Add(entity, cancellationToken);
-            
+            var newProjectUser = ProjectUser.New(ProjectUserId.New(), entity.Id, entity.CreatorId, roles[0].Id);
+            await _projectUserReposiory.Add(newProjectUser, cancellationToken);
             return result;
         }
         catch (Exception exception)

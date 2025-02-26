@@ -9,13 +9,20 @@ namespace API.Controllers;
 
 [Route("time-entries")]
 [ApiController]
-public class TimeEntriesController(ISender sender, ITimeEntryQueries roleQueries) : ControllerBase
+public class TimeEntriesController(ISender sender, ITimeEntryQueries timeQueries) : ControllerBase
 {
     [HttpGet("get-all")]
     public async Task<ActionResult<List<TimeEntryDto>>> GetAll(CancellationToken cancellationToken)
     {
-        var roles = await roleQueries.GetAll(cancellationToken);
-        return roles.Select(TimeEntryDto.FromDomainModel).ToList();
+        var timeEntries = await timeQueries.GetAll(cancellationToken);
+        return timeEntries.Select(TimeEntryDto.FromDomainModel).ToList();
+    }
+    
+    [HttpGet("get-all-by-user-id/{userId:guid}")]
+    public async Task<ActionResult<List<TimeEntryDto>>> GetAll(Guid userId, CancellationToken cancellationToken)
+    {
+        var timeEntries = await timeQueries.GetAllByUserId(userId, cancellationToken);
+        return timeEntries.Select(TimeEntryDto.FromDomainModel).ToList();
     }
     
     [HttpPost("create")]

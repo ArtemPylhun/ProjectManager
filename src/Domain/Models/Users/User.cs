@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Domain.Models.EmailNotifications;
 using Domain.Models.Projects;
 using Domain.Models.ProjectUsers;
 using Domain.Models.TimeEntries;
@@ -17,6 +16,5 @@ public class User: IdentityUser<Guid>
     public ICollection<Project> CreatedProjects { get; set; } = new List<Project>();
     [JsonIgnore]
     public ICollection<Project> ClientProjects { get; set; } = new List<Project>();
-    public ICollection<EmailNotification> EmailNotifications { get; set; } = new List<EmailNotification>();
     
 }

@@ -10,11 +10,13 @@
       <PackageReference Include="EntityFrameworkCore.NamingConventions" Version="8.0.0" />
       <PackageReference Include="Hangfire.NetCore" Version="1.8.17" />
       <PackageReference Include="Hangfire.PostgreSql" Version="1.20.10" />
+      <PackageReference Include="MailKit" Version="4.10.0" />
       <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.0" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.12" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+      <PackageReference Include="MimeKit" Version="4.10.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
       <PackageReference Include="Optional" Version="4.0.0" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.1" />

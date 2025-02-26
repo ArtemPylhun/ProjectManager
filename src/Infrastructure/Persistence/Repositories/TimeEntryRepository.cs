@@ -82,6 +82,17 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
 
         return entity == null ? Option.None<TimeEntry>() : Option.Some(entity);
     }
+    
+    public async Task<IReadOnlyList<TimeEntry>> GetDailyTimeEntriesForUser(Guid userId, DateTime date, CancellationToken cancellationToken)
+    {
+        return await context.TimeEntries
+            .Where(x => x.UserId == userId && x.StartDate.Date == date.Date)
+            .Include(x => x.Project)
+            .Include(x => x.ProjectTask)
+            .Include(x => x.User)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
 
     public async Task<TimeEntry> Add(TimeEntry timeEntry, CancellationToken cancellationToken)
     {

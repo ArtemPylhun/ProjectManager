@@ -4,6 +4,7 @@ using Application.Common.Interfaces.Repositories;
 using Application.ProjectTasks.Exceptions;
 using Domain.Models.Projects;
 using Domain.Models.ProjectTasks;
+using Domain.Models.UsersTasks;
 using MediatR;
 
 namespace Application.ProjectTasks.Commands;
@@ -22,11 +23,13 @@ public class
     private readonly IProjectTaskQueries _projectTaskQueries;
     private readonly IProjectTaskRepository _projectTaskRepository;
     private readonly IProjectQueries _projectQueries;
-    public CreateProjectCommandHandler(IProjectTaskQueries projectTaskQueries, IProjectTaskRepository projectTaskRepository, IProjectQueries projectQueries)
+    private readonly IUserTaskRepository _userTaskRepository;
+    public CreateProjectCommandHandler(IProjectTaskQueries projectTaskQueries, IProjectTaskRepository projectTaskRepository, IProjectQueries projectQueries, IUserTaskRepository userTaskRepository)
     {
         _projectTaskQueries = projectTaskQueries;
         _projectTaskRepository = projectTaskRepository;
         _projectQueries = projectQueries;
+        _userTaskRepository = userTaskRepository;
     }
     public async Task<Result<ProjectTask, ProjectTaskException>> Handle(CreateProjectTaskCommand request,
         CancellationToken cancellationToken)
@@ -56,7 +59,6 @@ public class
         try
         {
             var result = await _projectTaskRepository.Add(entity, cancellationToken);
-            
             return result;
         }
         catch (Exception exception)

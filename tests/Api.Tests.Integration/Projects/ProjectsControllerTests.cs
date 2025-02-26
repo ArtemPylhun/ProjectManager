@@ -17,13 +17,14 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
     private readonly User _mainUser;
     private readonly Project _existingProject;
     private readonly Project _existingProject2;
-
+    private readonly Role _projectRole;
 
     public ProjectsControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
         _mainUser = UsersData.MainUser;
         _existingProject = ProjectsData.ExistingProject(_mainUser.Id, _mainUser.Id);
         _existingProject2 = ProjectsData.ExistingProject2(_mainUser.Id, _mainUser.Id);
+        _projectRole = RolesData.ProjectRole;
     }
 
     [Fact]
@@ -144,7 +145,8 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: _existingProject.Id.Value,
             Name: projectName,
             Description: projectDesc,
-            ColorHex: colorHex);
+            ColorHex: colorHex,
+            ClientId: _mainUser.Id);
         //Act
         var response = await Client.PutAsJsonAsync("projects/update", request);
         //Assert
@@ -160,6 +162,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
         dbProject.Name.Should().Be(request.Name);
         dbProject.Description.Should().Be(request.Description);
         dbProject.ColorHex.Should().Be(request.ColorHex);
+        dbProject.ClientId.Should().Be(request.ClientId);
     }
 
     [Fact]
@@ -173,7 +176,8 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: Guid.NewGuid(),
             Name: projectName,
             Description: projectDesc,
-            ColorHex: colorHex);
+            ColorHex: colorHex,
+            ClientId: _mainUser.Id);
         //Act
         var response = await Client.PutAsJsonAsync("projects/update", request);
         //Assert
@@ -191,7 +195,8 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: _existingProject.Id.Value,
             Name: _existingProject2.Name,
             Description: projectDesc,
-            ColorHex: colorHex);
+            ColorHex: colorHex,
+            ClientId: _mainUser.Id);
         //Act
         var response = await Client.PutAsJsonAsync("projects/update", request);
         //Assert
@@ -235,6 +240,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
     {
         await Context.Users.AddAsync(_mainUser);
         await SaveChangesAsync();
+        await Context.Roles.AddAsync(_projectRole);
         await Context.Projects.AddAsync(_existingProject);
         await Context.Projects.AddAsync(_existingProject2);
         await SaveChangesAsync();

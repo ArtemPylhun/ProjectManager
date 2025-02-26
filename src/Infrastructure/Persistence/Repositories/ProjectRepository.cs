@@ -18,6 +18,17 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
             .ToListAsync(cancellationToken);
     }
     
+    public async Task<IReadOnlyList<Project>> GetAllByUserId(Guid userId, CancellationToken cancellationToken)
+    {
+        return await context.Projects
+            .AsNoTracking()
+            .Where(x => x.ProjectUsers.Any(pu => pu.UserId == userId))
+            .Include(x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers)
+            .ToListAsync(cancellationToken);
+    }
+    
     public async Task<IReadOnlyList<Project>> GetAllByClient(Guid userId, CancellationToken cancellationToken)
     {
         return await context.Projects
@@ -73,7 +84,15 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
 
     public async Task<Project> Update(Project project, CancellationToken cancellationToken)
     {
-        context.Projects.Update(project);
+        var existingEntry = context.Projects.Find(project.Id);
+        if (existingEntry == null)
+        {
+            context.Projects.Add(project); // If not found, add as new
+        }
+        else
+        {
+            context.Entry(existingEntry).CurrentValues.SetValues(project); // Update tracked entity
+        }
 
         await context.SaveChangesAsync(cancellationToken);
 

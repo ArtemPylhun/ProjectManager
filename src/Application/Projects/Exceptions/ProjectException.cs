@@ -1,4 +1,5 @@
 using Domain.Models.Projects;
+using Domain.Models.Roles;
 
 namespace Application.Projects.Exceptions;
 
@@ -20,3 +21,5 @@ public class CreatorNotFoundException(Guid creatorId)
 
 public class ClientNotFoundException(Guid clientId)
     :ProjectException(ProjectId.Empty(), $"Client under id: {clientId} not found!");
+    
+    public class RolesNotFoundException() : ProjectException(null, $"Roles not found!");

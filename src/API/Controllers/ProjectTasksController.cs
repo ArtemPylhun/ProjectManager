@@ -19,6 +19,13 @@ public class ProjectTasksController(ISender sender, IProjectTaskQueries projectT
         return projects.Select(ProjectTaskDto.FromDomainModel).ToList();
     }
     
+    [HttpGet("get-all-by-user-id/{userId:guid}")]
+    public async Task<ActionResult<List<ProjectTaskDto>>> GetAllByUserId([FromRoute] Guid userId, CancellationToken cancellationToken)
+    {
+        var projects = await projectTaskQueries.GetAllByUserId(userId, cancellationToken);
+        return projects.Select(ProjectTaskDto.FromDomainModel).ToList();
+    }
+    
     [HttpGet("get-project-tasks-statuses")]
     public ActionResult<List<object>> GetRoleGroups()
     {

@@ -1,5 +1,4 @@
 using System.Reflection;
-using Domain.Models.EmailNotifications;
 using Domain.Models.Projects;
 using Domain.Models.ProjectTasks;
 using Domain.Models.ProjectUsers;
@@ -20,7 +19,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UserTask> UserTasks { get; set; }
     public DbSet<ProjectTask> ProjectTasks  { get; set; }
     public DbSet<ProjectUser> ProjectUsers  { get; set; }
-    public DbSet<EmailNotification> EmailNotifications  { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

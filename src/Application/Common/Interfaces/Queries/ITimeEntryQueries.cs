@@ -19,4 +19,6 @@ public interface ITimeEntryQueries
 
     Task<Option<TimeEntry>> GetByProjectTaskAndProjectAndUserIds(ProjectTaskId projectTaskId, ProjectId projectId,
         Guid userId, CancellationToken cancellationToken);
+    
+    Task<IReadOnlyList<TimeEntry>> GetDailyTimeEntriesForUser(Guid userId, DateTime date, CancellationToken cancellationToken);
 }

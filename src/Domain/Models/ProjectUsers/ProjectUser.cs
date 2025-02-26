@@ -9,14 +9,11 @@ public class ProjectUser
 {
     public ProjectUserId Id { get; }
     public ProjectId ProjectId { get; private set; }
-    [JsonIgnore]
     public Project? Project { get; }
     public Guid UserId { get; private set; }
     
-    [JsonIgnore]
     public User? User { get; }
     public Guid RoleId { get; private set; }
-    [JsonIgnore]
     public Role? Role { get; }
 
     private ProjectUser(ProjectUserId id, ProjectId projectId, Guid userId, Guid roleId)

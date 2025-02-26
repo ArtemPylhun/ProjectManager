@@ -6,14 +6,12 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Infrastructure;
 using Infrastructure.Authentication;
+using Infrastructure.Services;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var isTesting = builder.Environment.EnvironmentName == "Testing" ||
-                builder.Configuration.GetValue<bool>("IsTesting");
 
 // Configure application services
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -66,21 +64,55 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuer = true,
             ValidateAudience = true
         };
-    });
+    })
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/users/login"; // Redirect path for non-API unauthenticated requests
+        options.Events.OnRedirectToLogin = context =>
+        {
+            // Return 401 for API requests instead of redirecting
+            if (context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/users"))
+            {
+                context.Response.StatusCode = 401;
+                return Task.CompletedTask;
+            }
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
+    })
+    .AddFacebook(options =>
+    {
+        options.ClientId = "657579603610519";
+        options.ClientSecret = "ef7a736a4409fe0d4f4e63e1d20e3f44";
+        options.CallbackPath = "/signin-facebook";
+        options.Scope.Add("email");
+        options.Fields.Add("name");
+        options.Fields.Add("email");
+        options.SaveTokens = true;
 
-/*
-if (!isTesting)
-{
-    //Adding Hangfire
-    builder.Services.AddHangfire(config => config
-        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        .UsePostgreSqlStorage(builder.Configuration.GetConnectionString("Default")));
-            
-    builder.Services.AddHangfireServer();
-}
-*/
+        options.Events.OnRemoteFailure = context =>
+        {
+            Console.WriteLine($"Remote failure: {context.Failure?.Message} - {context.Failure?.StackTrace}");
+            context.HandleResponse();
+            // Redirect to frontend login with error
+            var error = context.Failure?.Message ?? "Login cancelled or failed";
+            var redirectUrl = $"http://localhost:5173/login?error={Uri.EscapeDataString("access_denied")}&error_description={Uri.EscapeDataString(error)}";
+            context.Response.Redirect(redirectUrl);
+            return Task.CompletedTask;
+        };
+
+        options.Events.OnTicketReceived = context =>
+        {
+            Console.WriteLine("Ticket received from Facebook");
+            return Task.CompletedTask;
+        };
+
+        options.Events.OnCreatingTicket = async context =>
+        {
+            var userInfo = context.Identity;
+            Console.WriteLine($"User authenticated: {userInfo.Name}");
+        };
+    });
 
 // CORS policy setup
 builder.Services.AddCors(c =>
@@ -103,13 +135,19 @@ app.UseAuthentication();
 app.UseAuthorization();
 await app.InitializeDb();
 app.MapControllers();
-/*
+
+
+var isTesting = builder.Configuration.GetValue<bool>("IsTesting");
+
 if (!isTesting)
 {
     app.UseHangfireDashboard();
-    app.MapHangfireDashboard();
+    RecurringJob.AddOrUpdate<TimeEntryNotificationService>(
+        "schedule-time-entry-notifications",
+        service => service.ScheduleTimeEntryNotifications(),
+        Cron.Daily(20, 05)
+    );
 }
-*/
 
 
 
