@@ -55,6 +55,40 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<TimeEntry> TimeEntries, int TotalCount)> GetAllPaginated(int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var query = context.TimeEntries
+            .AsNoTracking()
+            .Include(x => x.Project)
+            .Include(x => x.ProjectTask)
+            .Include(x => x.User);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var timeEntries = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (timeEntries, totalCount);
+    }
+
+    public async Task<(IReadOnlyList<TimeEntry> TimeEntries, int TotalCount)> GetAllByUserIdPaginated(Guid userId, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var query = context.TimeEntries
+            .AsNoTracking()
+            .Include(x => x.Project)
+            .Include(x => x.ProjectTask)
+            .Include(x => x.User);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var projects = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (projects, totalCount);
+    }
+    
     public async Task<Option<TimeEntry>> GetById(TimeEntryId id, CancellationToken cancellationToken)
     {
         var entity = await context.TimeEntries

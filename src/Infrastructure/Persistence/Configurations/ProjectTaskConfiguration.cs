@@ -16,7 +16,8 @@ public class ProjectTaskConfiguration: IEntityTypeConfiguration<ProjectTask>
         
         builder.HasOne(x => x.Project)
             .WithMany(x => x.ProjectTasks)
-            .HasForeignKey(x => x.ProjectId);
+            .HasForeignKey(x => x.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.Property(x => x.Name).IsRequired().HasColumnType("varchar(255)");
         builder.Property(x => x.EstimatedTime).IsRequired();

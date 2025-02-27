@@ -4,6 +4,7 @@ using Application.Common.Interfaces.Queries;
 using Application.Projects.Commands;
 using Domain.Models.Projects;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -13,17 +14,35 @@ namespace API.Controllers;
 public class ProjectsController(ISender sender, IProjectQueries projectQueries): ControllerBase
 {
     [HttpGet("get-all")]
-    public async Task<ActionResult<List<ProjectDto>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<TimeEntryDto>>> GetAll(CancellationToken cancellationToken = default)
     {
         var projects = await projectQueries.GetAll(cancellationToken);
-        return projects.Select(ProjectDto.FromDomainModel).ToList();
+        return Ok(projects.Select(ProjectDto.FromDomainModel));
     }
     
     [HttpGet("get-all-by-user-id/{userId:guid}")]
-    public async Task<ActionResult<List<ProjectDto>>> GetAllByUserId([FromRoute] Guid userId, CancellationToken cancellationToken)
+    public async Task<ActionResult<List<TimeEntryDto>>> GetAllByUserId(Guid userId, CancellationToken cancellationToken = default)
     {
         var projects = await projectQueries.GetAllByUserId(userId, cancellationToken);
-        return projects.Select(ProjectDto.FromDomainModel).ToList();
+        return Ok(projects.Select(ProjectDto.FromDomainModel));
+    }
+    
+    [HttpGet("get-all-paginated")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        var (defaultProjects, totalCount) = await projectQueries.GetAllPaginated(page, pageSize, cancellationToken);
+        var projects = defaultProjects.Select(ProjectDto.FromDomainModel).ToList();
+        return Ok(new { projects, totalCount });
+    }
+
+    [HttpGet("get-all-by-user-id-paginated/{userId}")]
+    [Authorize(Roles = "User, Admin")]
+    public async Task<IActionResult> GetAllByUserIdPaginated(string userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        var (defaultProjects, totalCount) = await projectQueries.GetAllByUserIdPaginated(Guid.Parse(userId), page, pageSize, cancellationToken);
+        var projects = defaultProjects.Select(ProjectDto.FromDomainModel).ToList();
+        return Ok(new { projects, totalCount });
     }
     
     [HttpGet("{projectId:guid}")]

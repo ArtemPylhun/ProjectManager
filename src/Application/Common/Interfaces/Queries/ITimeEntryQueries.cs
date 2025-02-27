@@ -21,4 +21,8 @@ public interface ITimeEntryQueries
         Guid userId, CancellationToken cancellationToken);
     
     Task<IReadOnlyList<TimeEntry>> GetDailyTimeEntriesForUser(Guid userId, DateTime date, CancellationToken cancellationToken);
+    
+    Task<(IReadOnlyList<TimeEntry> TimeEntries, int TotalCount)> GetAllPaginated(int page, int pageSize, CancellationToken cancellationToken);
+    Task<(IReadOnlyList<TimeEntry> TimeEntries, int TotalCount)> GetAllByUserIdPaginated(Guid userId, int page, int pageSize, CancellationToken cancellationToken);
+
 }

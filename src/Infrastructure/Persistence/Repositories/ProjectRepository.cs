@@ -8,6 +8,41 @@ namespace Infrastructure.Persistence.Repositories;
 
 public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, IProjectRepository
 {
+    public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> GetAllPaginated(int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var query = context.Projects
+            .AsNoTracking()
+            .Include(x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var projects = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (projects, totalCount);
+    }
+
+    public async Task<(IReadOnlyList<Project> Projects, int TotalCount)> GetAllByUserIdPaginated(Guid userId, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var query = context.Projects
+            .AsNoTracking()
+            .Where(x => x.ProjectUsers.Any(pu => pu.UserId == userId))
+            .Include(x => x.Creator)
+            .Include(x => x.Client)
+            .Include(x => x.ProjectUsers);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var projects = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (projects, totalCount);
+    }
+    
     public async Task<IReadOnlyList<Project>> GetAll(CancellationToken cancellationToken)
     {
         return await context.Projects

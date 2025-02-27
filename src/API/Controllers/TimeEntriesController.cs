@@ -12,17 +12,19 @@ namespace API.Controllers;
 public class TimeEntriesController(ISender sender, ITimeEntryQueries timeQueries) : ControllerBase
 {
     [HttpGet("get-all")]
-    public async Task<ActionResult<List<TimeEntryDto>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<TimeEntryDto>>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
-        var timeEntries = await timeQueries.GetAll(cancellationToken);
-        return timeEntries.Select(TimeEntryDto.FromDomainModel).ToList();
+        var (defaultTimeEntries, totalCount) = await timeQueries.GetAllPaginated(page, pageSize, cancellationToken);
+        var timeEntries = defaultTimeEntries.Select(TimeEntryDto.FromDomainModel).ToList();
+        return Ok(new { timeEntries, totalCount });
     }
     
     [HttpGet("get-all-by-user-id/{userId:guid}")]
-    public async Task<ActionResult<List<TimeEntryDto>>> GetAll(Guid userId, CancellationToken cancellationToken)
+    public async Task<ActionResult<List<TimeEntryDto>>> GetAll(Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
-        var timeEntries = await timeQueries.GetAllByUserId(userId, cancellationToken);
-        return timeEntries.Select(TimeEntryDto.FromDomainModel).ToList();
+        var (defaultTimeEntries, totalCount) = await timeQueries.GetAllByUserIdPaginated(userId, page, pageSize, cancellationToken);
+        var timeEntries = defaultTimeEntries.Select(TimeEntryDto.FromDomainModel).ToList();
+        return Ok(new { timeEntries, totalCount });
     }
     
     [HttpPost("create")]

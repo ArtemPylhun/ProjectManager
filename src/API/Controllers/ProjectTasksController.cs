@@ -2,6 +2,7 @@ using API.DTOs;
 using Api.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.ProjectTasks.Commands;
+using Domain.Models.Projects;
 using Domain.Models.ProjectTasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -15,15 +16,41 @@ public class ProjectTasksController(ISender sender, IProjectTaskQueries projectT
     [HttpGet("get-all")]
     public async Task<ActionResult<List<ProjectTaskDto>>> GetAll(CancellationToken cancellationToken)
     {
-        var projects = await projectTaskQueries.GetAll(cancellationToken);
-        return projects.Select(ProjectTaskDto.FromDomainModel).ToList();
+        var projectTasks = await projectTaskQueries.GetAll(cancellationToken);
+        return Ok(projectTasks.Select(ProjectTaskDto.FromDomainModel));
     }
     
     [HttpGet("get-all-by-user-id/{userId:guid}")]
-    public async Task<ActionResult<List<ProjectTaskDto>>> GetAllByUserId([FromRoute] Guid userId, CancellationToken cancellationToken)
+    public async Task<ActionResult<List<ProjectTaskDto>>> GetAllByUserId(Guid userId, CancellationToken cancellationToken)
     {
-        var projects = await projectTaskQueries.GetAllByUserId(userId, cancellationToken);
-        return projects.Select(ProjectTaskDto.FromDomainModel).ToList();
+        var projectTasks = await projectTaskQueries.GetAllByUserId(userId, cancellationToken);
+        return Ok(projectTasks.Select(ProjectTaskDto.FromDomainModel));
+    }
+    
+    [HttpGet("get-all-paginated")]
+    public async Task<IActionResult> GetAllPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        var (defaultProjectTasks, totalCount) = await projectTaskQueries.GetAllPaginated(page, pageSize, cancellationToken);
+        var projectTasks = defaultProjectTasks.Select(ProjectTaskDto.FromDomainModel).ToList();
+        return Ok(new { projectTasks, totalCount });
+    }
+    
+    [HttpGet("get-all-by-user-id-paginated/{userId:guid}")]
+    public async Task<ActionResult<List<ProjectTaskDto>>> GetAllByUserIdPaginated(Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        var (defaultProjectTasks, totalCount) = await projectTaskQueries.GetAllByUserIdPaginated(userId, page, pageSize, cancellationToken);
+        var projectTasks = defaultProjectTasks.Select(ProjectTaskDto.FromDomainModel).ToList();
+        return Ok(new { projectTasks, totalCount });
+
+    }
+    
+    [HttpGet("get-all-by-project-id/{projectId:guid}")]
+    public async Task<ActionResult<List<ProjectTaskDto>>> GetAllByProjectId(Guid projectId, CancellationToken cancellationToken = default)
+    {
+        var projectIdValue = new ProjectId(projectId); 
+        var projectTasks = await projectTaskQueries.GetAllByProjectId(projectIdValue, cancellationToken);
+        return Ok(projectTasks);
+
     }
     
     [HttpGet("get-project-tasks-statuses")]
@@ -41,6 +68,15 @@ public class ProjectTasksController(ISender sender, IProjectTaskQueries projectT
         return Ok(roleGroups);
     }
 
+    [HttpGet("{projectTaskId:guid}")]
+    public async Task<ActionResult<ProjectTaskDto>> GetById([FromRoute] Guid projectTaskId, CancellationToken cancellationToken)
+    {
+        var projectTask = await projectTaskQueries.GetById(new ProjectTaskId(projectTaskId), cancellationToken);
+        return projectTask.Match<ActionResult<ProjectTaskDto>>(
+            p => ProjectTaskDto.FromDomainModel(p),
+            () => NotFound());
+    }
+    
     [HttpPost("create")]
     public async Task<ActionResult<ProjectTaskDto>> Create([FromBody] ProjectTaskCreateDto request,
         CancellationToken cancellationToken)

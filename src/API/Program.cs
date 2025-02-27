@@ -145,7 +145,7 @@ if (!isTesting)
     RecurringJob.AddOrUpdate<TimeEntryNotificationService>(
         "schedule-time-entry-notifications",
         service => service.ScheduleTimeEntryNotifications(),
-        Cron.Daily(20, 05)
+        Cron.Daily()
     );
 }
 

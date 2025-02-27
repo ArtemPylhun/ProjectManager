@@ -31,7 +31,7 @@ public class TimeEntryNotificationService(
 
             if (noEntries || insufficientMinutes)
             {
-                var notificationTime = DateTime.UtcNow.Date.AddHours(16).AddMinutes(02);
+                var notificationTime = DateTime.UtcNow.Date.AddHours(7);
                 if (notificationTime < DateTime.UtcNow)
                 {
                     notificationTime = notificationTime.AddDays(1);

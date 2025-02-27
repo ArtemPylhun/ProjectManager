@@ -28,6 +28,38 @@ public class ProjectTaskRepository(ApplicationDbContext context): IProjectTaskRe
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<ProjectTask> ProjectTasks, int TotalCount)> GetAllPaginated(int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var query = context.ProjectTasks
+            .AsNoTracking()
+            .Include(x => x.Project)
+            .Include(x => x.UsersTask);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var projects = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (projects, totalCount);
+    }
+
+    public async Task<(IReadOnlyList<ProjectTask> ProjectTasks, int TotalCount)> GetAllByUserIdPaginated(Guid userId, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var query = context.ProjectTasks
+            .AsNoTracking()
+            .Include(x => x.Project)
+            .Include(x => x.UsersTask);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var projects = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (projects, totalCount);
+    }
+    
     public async Task<IReadOnlyList<ProjectTask>> GetAllByUserId(Guid userId, CancellationToken cancellationToken)
     {
         return await context.ProjectTasks

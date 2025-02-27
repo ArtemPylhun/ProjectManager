@@ -16,14 +16,17 @@ public class ProjectUserConfiguration: IEntityTypeConfiguration<ProjectUser>
         
         builder.HasOne(x => x.Project)
             .WithMany(x => x.ProjectUsers)
-            .HasForeignKey(x => x.ProjectId);
+            .HasForeignKey(x => x.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.HasOne(x => x.User)
             .WithMany(x => x.ProjectUsers)
-            .HasForeignKey(x => x.UserId);
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.HasOne(x => x.Role)
             .WithMany(x => x.ProjectUsers)
-            .HasForeignKey(x => x.RoleId);
+            .HasForeignKey(x => x.RoleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

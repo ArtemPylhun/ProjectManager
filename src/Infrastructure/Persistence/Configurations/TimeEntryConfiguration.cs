@@ -18,15 +18,18 @@ public class TimeEntryConfiguration : IEntityTypeConfiguration<TimeEntry>
 
         builder.HasOne(x => x.User)
             .WithMany(x => x.TimeEntries)
-            .HasForeignKey(x => x.UserId);
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.HasOne(x => x.Project)
             .WithMany(x => x.TimeEntries)
-            .HasForeignKey(x => x.ProjectId);
+            .HasForeignKey(x => x.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.HasOne(x => x.ProjectTask)
             .WithMany(x => x.TimeEntries)
-            .HasForeignKey(x => x.ProjectTaskId);
+            .HasForeignKey(x => x.ProjectTaskId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(x => x.Description)
             .IsRequired()
