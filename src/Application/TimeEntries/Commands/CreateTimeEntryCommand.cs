@@ -27,7 +27,6 @@ public class
     CreateTimeEntryCommandHandler : IRequestHandler<CreateTimeEntryCommand, Result<TimeEntry, TimeEntryException>>
 {
     private readonly ITimeEntryRepository _timeEntryRepository;
-    private readonly ITimeEntryQueries _timeEntryQueries;
     private readonly IProjectQueries _projectQueries;
     private readonly IProjectTaskQueries _projectTaskQueries;
     private readonly UserManager<User> _userManager;
@@ -36,7 +35,6 @@ public class
         IProjectQueries projectQueries, IProjectTaskQueries projectTaskQueries, UserManager<User> userManager)
     {
         _timeEntryRepository = timeEntryRepository;
-        _timeEntryQueries = timeEntryQueries;
         _projectQueries = projectQueries;
         _projectTaskQueries = projectTaskQueries;
         _userManager = userManager;
@@ -55,6 +53,16 @@ public class
         var projectId = new ProjectId(request.ProjectId);
         var projectTaskId = new ProjectTaskId(request.ProjectTaskId.Value);
         var project = await _projectQueries.GetById(projectId, cancellationToken);
+        
+        if (await _timeEntryRepository.HasTimeOverlap(user.Id, request.StartTime, request.EndTime, null,
+                cancellationToken))
+        {
+            return await Task.FromResult(
+                Result<TimeEntry, TimeEntryException>.Failure(
+                    new TimeEntryOverlapException(request.StartTime, request.EndTime)));
+            
+        }
+        
         return await project.Match(
             async p =>
             {

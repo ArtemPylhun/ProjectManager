@@ -13,6 +13,15 @@ public static class RolesData
             ConcurrencyStamp = Guid.NewGuid().ToString()
         };
 
+    public static Role AdminRole2 =>
+        new Role
+        {
+            Id = Guid.NewGuid(),
+            Name = "Admin2",
+            NormalizedName = "Admin2".ToUpperInvariant(),
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        };
+    
     public static Role AdminRole =>
         new Role
         {

@@ -14,6 +14,10 @@ public class ProjectUserConfiguration: IEntityTypeConfiguration<ProjectUser>
         
         builder.Property(x => x.ProjectId).HasConversion(x => x.Value, x => new ProjectId(x));
         
+        builder
+            .HasIndex(pu => new { pu.UserId, pu.ProjectId, pu.RoleId })
+            .IsUnique();
+        
         builder.HasOne(x => x.Project)
             .WithMany(x => x.ProjectUsers)
             .HasForeignKey(x => x.ProjectId)

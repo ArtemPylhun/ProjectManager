@@ -64,7 +64,6 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
         {
             existingUser.Email = request.Email;
             existingUser.UserName = request.UserName;
-            //existingUser.PasswordHash = _userManager.PasswordHasher.HashPassword(existingUser, request.Password);
             existingUser.SecurityStamp = Guid.NewGuid().ToString();
 
             var result = await _userManager.UpdateAsync(existingUser);

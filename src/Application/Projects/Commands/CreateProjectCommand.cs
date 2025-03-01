@@ -90,7 +90,7 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
         }
         catch (Exception exception)
         {
-            return new ProjectUnknownException(entity.Id, exception);
+            return new ProjectUnknownException(ProjectId.Empty(), exception);
         }
     }
 }

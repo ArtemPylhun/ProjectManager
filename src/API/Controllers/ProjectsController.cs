@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.DTOs.Common;
 using Api.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Projects.Commands;
@@ -14,6 +15,7 @@ namespace API.Controllers;
 public class ProjectsController(ISender sender, IProjectQueries projectQueries): ControllerBase
 {
     [HttpGet("get-all")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<List<TimeEntryDto>>> GetAll(CancellationToken cancellationToken = default)
     {
         var projects = await projectQueries.GetAll(cancellationToken);
@@ -21,6 +23,7 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
     }
     
     [HttpGet("get-all-by-user-id/{userId:guid}")]
+    [Authorize(Roles = "Admin,User")]
     public async Task<ActionResult<List<TimeEntryDto>>> GetAllByUserId(Guid userId, CancellationToken cancellationToken = default)
     {
         var projects = await projectQueries.GetAllByUserId(userId, cancellationToken);
@@ -29,23 +32,36 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
     
     [HttpGet("get-all-paginated")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetAllPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAllPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
     {
-        var (defaultProjects, totalCount) = await projectQueries.GetAllPaginated(page, pageSize, cancellationToken);
-        var projects = defaultProjects.Select(ProjectDto.FromDomainModel).ToList();
-        return Ok(new { projects, totalCount });
+        var (projects, totalCount) = await projectQueries.GetAllPaginated(page, pageSize, search ?? "", cancellationToken);
+        var projectDtos = projects.Select(ProjectDto.FromDomainModel).ToList();
+        return Ok(new PaginatedResponse<ProjectDto>
+        {
+            Items = projectDtos,
+            TotalCount = totalCount,
+            CurrentPage = page,
+            PageSize = pageSize
+        });
     }
 
     [HttpGet("get-all-by-user-id-paginated/{userId}")]
-    [Authorize(Roles = "User, Admin")]
-    public async Task<IActionResult> GetAllByUserIdPaginated(string userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> GetAllByUserIdPaginated([FromRoute] string userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
     {
-        var (defaultProjects, totalCount) = await projectQueries.GetAllByUserIdPaginated(Guid.Parse(userId), page, pageSize, cancellationToken);
-        var projects = defaultProjects.Select(ProjectDto.FromDomainModel).ToList();
-        return Ok(new { projects, totalCount });
+        var (projects, totalCount) = await projectQueries.GetAllByUserIdPaginated(Guid.Parse(userId), page, pageSize, search ?? "", cancellationToken);
+        var projectDtos = projects.Select(ProjectDto.FromDomainModel).ToList();
+        return Ok(new PaginatedResponse<ProjectDto>
+        {
+            Items = projectDtos,
+            TotalCount = totalCount,
+            CurrentPage = page,
+            PageSize = pageSize
+        });
     }
     
     [HttpGet("{projectId:guid}")]
+    [Authorize(Roles = "Admin,User")]
     public async Task<ActionResult<ProjectDto>> GetById([FromRoute] Guid projectId, CancellationToken cancellationToken)
     {
         var project = await projectQueries.GetById(new ProjectId(projectId), cancellationToken);
@@ -54,6 +70,7 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
             () => NotFound());
     }
     [HttpPost("create")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ProjectDto>> Create([FromBody] ProjectCreateDto request, CancellationToken cancellationToken)
     {
         var input = new CreateProjectCommand
@@ -73,6 +90,7 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
     }
     
     [HttpPut("update")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ProjectDto>> Create([FromBody] ProjectUpdateDto request, CancellationToken cancellationToken)
     {
         var input = new UpdateProjectCommand
@@ -92,6 +110,7 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
     }
     
     [HttpDelete("delete/{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ProjectDto>> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var input = new DeleteProjectCommand
@@ -105,6 +124,7 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
     }
     
     [HttpPost("add-user-to-project")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ProjectUserDto>> AddUserToProject([FromBody] ProjectUserCreateDto request, CancellationToken cancellationToken)
     {
         var input = new AddUserToProjectCommand
@@ -120,6 +140,7 @@ public class ProjectsController(ISender sender, IProjectQueries projectQueries):
     }
     
     [HttpDelete("remove-user-from-project/{projectUserId:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ProjectUserDto>> RemoveUserFromProject([FromRoute] Guid projectUserId, CancellationToken cancellationToken)
     {
         var input = new RemoveUserFromProjectCommand

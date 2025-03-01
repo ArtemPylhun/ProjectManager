@@ -50,6 +50,15 @@ public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryComm
         var existingTimeEntryId = new TimeEntryId(request.Id.Value);
         var existingTimeEntry = await _timeEntryQueries.GetById(existingTimeEntryId, cancellationToken);
 
+        if (await _timeEntryRepository.HasTimeOverlap(user.Id, request.StartTime, request.EndTime, existingTimeEntryId,
+                cancellationToken))
+        {
+            return await Task.FromResult(
+                Result<TimeEntry, TimeEntryException>.Failure(
+                    new TimeEntryOverlapException(request.StartTime, request.EndTime)));
+            
+        }
+        
         var projectId = new ProjectId(request.ProjectId);
         var projectTaskId = new ProjectTaskId(request.ProjectTaskId.Value);
         return await existingTimeEntry.Match(
@@ -109,7 +118,7 @@ public class UpdateTimeEntryCommandHandler : IRequestHandler<UpdateTimeEntryComm
         }
         catch (Exception exception)
         {
-            return new TimeEntryUnknownException(TimeEntryId.Empty(), exception);
+            return new TimeEntryUnknownException(entity.Id, exception);
         }
     }
 }

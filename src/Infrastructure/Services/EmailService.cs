@@ -16,7 +16,7 @@ public class EmailService(IConfiguration configuration, ILogger<EmailService> lo
     private readonly string _fromEmail = configuration["EmailSettings:SenderEmail"];
     private readonly string _senderName = configuration["EmailSettings:SenderName"];
 
-    public async Task SendEmail(string to, string subject, string body)
+    public async Task SendEmail(string to, string subject, string body, bool isHtml = true)
     {
         try
         {
@@ -27,8 +27,10 @@ public class EmailService(IConfiguration configuration, ILogger<EmailService> lo
             message.Subject = subject;
 
             // Create the body of the email
-            var bodyBuilder = new BodyBuilder { HtmlBody = body };
-            message.Body = bodyBuilder.ToMessageBody();
+            message.Body = new TextPart(isHtml ? "html" : "plain")
+            {
+                Text = body
+            };
 
             // Connect to the SMTP server and send the email
             using (var client = new SmtpClient())
@@ -45,5 +47,10 @@ public class EmailService(IConfiguration configuration, ILogger<EmailService> lo
         {
             logger.LogError($"Failed to send email to {to}: {ex.Message}");
         }
+    }
+
+    public Task SendEmail(string to, string subject, string body)
+    {
+        throw new NotImplementedException();
     }
 }

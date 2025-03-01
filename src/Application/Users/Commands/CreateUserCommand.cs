@@ -66,13 +66,13 @@ public class CreateUserCommandHandler
                 Email = request.Email
             };
             var entity = await _userManager.CreateAsync(user, request.Password);
-            var userRole = await _roleManager.FindByNameAsync("User");
+            var roleName = "User";
+            var userRole = await _roleManager.FindByNameAsync(roleName);
             if (userRole == null)
             {
-                await _roleManager.CreateAsync(new Role { Name = "User" });
+                await _roleManager.CreateAsync(new Role { Name = roleName });
             }
-            //TODO: Add seeder
-            await _userManager.AddToRoleAsync(user, "User");
+            await _userManager.AddToRoleAsync(user, roleName);
 
             return Result<User, UserException>.FromIdentityResult<User, UserException>(entity, user,
                 e => new UserUnknownException(user.Id, new Exception("User creation failed")));

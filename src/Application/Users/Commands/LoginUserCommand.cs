@@ -40,7 +40,6 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
         {
             user = await _userManager.FindByEmailAsync(request.EmailOrUsername);
         }
-
         if (user == null)
         {
             return await Task.FromResult<Result<string, UserException>>(new UserNotFoundException(Guid.Empty));

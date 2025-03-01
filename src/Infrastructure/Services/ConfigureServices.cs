@@ -1,6 +1,9 @@
 using Application.Common.Interfaces.Services;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +23,23 @@ public static class ConfigureServices
             services.AddHangfireServer();
         }
         
+        AddNotifications(services);
+    }
+    
+    private static void AddNotifications(IServiceCollection services)
+    {
+        services.AddControllersWithViews()
+            .AddRazorRuntimeCompilation();
+
+        
+        services.Configure<RazorViewEngineOptions>(options =>
+        {
+            options.ViewLocationExpanders.Add(new InfrastructureViewLocationExpander());
+        });
+
+        services.AddSingleton<ITempDataProvider, CookieTempDataProvider>(); 
+        services.AddSingleton<ICompositeViewEngine, CompositeViewEngine>(); 
+
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ITimeEntryNotificationService, TimeEntryNotificationService>();
     }

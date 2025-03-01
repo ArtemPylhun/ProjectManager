@@ -1,3 +1,4 @@
+using API.DTOs;
 using Application.ProjectTasks.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,7 @@ public static class ProjectTaskErrorHandler
         {
             StatusCode = exception switch
             {
-                ProjectTaskNotFoundException or ProjectForTaskNotFoundException => StatusCodes
+                ProjectTaskNotFoundException or ProjectForTaskNotFoundException or CreatorNotFoundException => StatusCodes
                         .Status404NotFound,
                 ProjectTaskAlreadyExistsException => StatusCodes
                     .Status409Conflict,

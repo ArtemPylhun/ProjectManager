@@ -47,7 +47,7 @@ public class
         }
         catch (Exception exception)
         {
-            return new TimeEntryUnknownException(TimeEntryId.Empty(), exception);
+            return new TimeEntryUnknownException(entity.Id, exception);
         }
     }
 }

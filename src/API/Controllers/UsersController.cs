@@ -1,13 +1,16 @@
 using System.Security.Claims;
 using API.DTOs;
+using API.DTOs.Common;
 using Api.Modules.Errors;
 using Application.Common.Interfaces;
+using Application.Common.Interfaces.Queries;
 using Application.Users.Commands;
 using Domain.Models.Roles;
 using Domain.Models.Users;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,15 +19,48 @@ namespace API.Controllers;
 
 [Route("users")]
 [ApiController]
-public class UsersController(ISender sender, UserManager<User> userManager, RoleManager<Role> roleManager, IJwtProvider _jwtProvider) : ControllerBase
+public class UsersController(ISender sender, UserManager<User> userManager, RoleManager<Role> roleManager, IProjectQueries projectQueries, IJwtProvider _jwtProvider) : ControllerBase
 {
+    [Authorize(Roles = "Admin")]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAll(CancellationToken cancellationToken)
     {
         var entities = await userManager.Users.ToListAsync(cancellationToken);
         return entities.Select(UserDto.FromDomainModel).ToList();
     }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpGet("get-all-paginated")]
+    public async Task<ActionResult<PaginatedResponse<UserDto>>> GetAll(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10, 
+        [FromQuery] string? searchQuery = null, 
+        CancellationToken cancellationToken = default)
+    {
+        var query = userManager.Users.AsQueryable();
 
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            query = query.Where(u => u.UserName.Contains(searchQuery) || u.Email.Contains(searchQuery));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var users = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        var userDtos = users.Select(UserDto.FromDomainModel).ToList();
+        return Ok(new PaginatedResponse<UserDto>
+        {
+            Items = userDtos,
+            TotalCount = totalCount,
+            CurrentPage = page,
+            PageSize = pageSize
+        });
+    }
+
+    [Authorize(Roles = "Admin, User")]
     [HttpGet("{userId:guid}")]
     public async Task<ActionResult<UserWithRolesDto>> GetByIdWithRoles([FromRoute] Guid userId,
         CancellationToken cancellationToken)
@@ -36,7 +72,8 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         var roles = await userManager.GetRolesAsync(user);
         return UserWithRolesDto.FromDomainModel(user, roles);
     }
-
+    
+    [Authorize(Roles = "Admin,User")]
     [HttpGet("get-all-with-roles")]
     public async Task<ActionResult<IReadOnlyList<UserWithRolesDto>>> GetAllWithRoles(
         CancellationToken cancellationToken)
@@ -50,6 +87,62 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         }
 
         return result.ToList();
+    }
+
+    [HttpGet("get-all-with-roles-by-project-id/{projectId:guid}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<ActionResult<PaginatedResponse<UserWithRolesDto>>> GetAllWithRolesByProjectId([FromRoute] Guid projectId,
+        CancellationToken cancellationToken)
+    {
+        var userIds = await projectQueries.GetAllUsersByProjectId(projectId, cancellationToken);
+        var result = new List<UserWithRolesDto>();
+        foreach (var userId in userIds)
+        {
+            var user = await userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                continue;
+            var roles = await userManager.GetRolesAsync(user);
+            result.Add(UserWithRolesDto.FromDomainModel(user, roles));
+        }
+
+        return Ok(result.ToList());
+    }
+        
+    [HttpGet("get-all-with-roles-paginated")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<PaginatedResponse<UserWithRolesDto>>> GetAllWithRoles(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10, 
+        [FromQuery] string? search = null, 
+        CancellationToken cancellationToken = default)
+    {
+        var query = userManager.Users.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(u => u.UserName.Contains(search) || u.Email.Contains(search));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var users = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        var result = new List<UserWithRolesDto>();
+        foreach (var user in users)
+        {
+            var roles = await userManager.GetRolesAsync(user);
+            result.Add(UserWithRolesDto.FromDomainModel(user, roles));
+        }
+
+        return Ok(new PaginatedResponse<UserWithRolesDto>
+        {
+            Items = result,
+            TotalCount = totalCount,
+            CurrentPage = page,
+            PageSize = pageSize
+        });
     }
     
     [HttpPost("login")]
@@ -76,7 +169,7 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         Console.WriteLine($"Initiating Facebook login, redirecting to: {redirectUrl}");
         return Challenge(properties, "Facebook");
     }
-
+    
     [HttpGet("facebook-callback")]
     public async Task<IActionResult> FacebookCallback()
     {
@@ -167,7 +260,8 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
             u => UserDto.FromDomainModel(u),
             e => e.ToObjectResult());
     }
-
+    
+    [Authorize(Roles = "Admin")]
     [HttpPut("update")]
     public async Task<ActionResult<UserDto>> Update([FromBody] UserUpdateDto request,
         CancellationToken cancellationToken)
@@ -186,6 +280,7 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{userId:guid}/update-roles")]
     public async Task<ActionResult> UpdateUserRoles([FromRoute] Guid userId, [FromBody] IList<string> roles)
     {
@@ -218,6 +313,7 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         return Ok("Roles updated successfully.");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("delete/{userId:guid}")]
     public async Task<ActionResult<UserDto>> Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
     {

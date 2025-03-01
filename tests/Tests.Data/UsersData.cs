@@ -7,6 +7,17 @@ public static class UsersData
 {
     private static readonly PasswordHasher<User> PasswordHasher = new PasswordHasher<User>();
 
+    public static User AdminUser = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "adminN@gmail.com",
+        UserName = "adminN",
+        NormalizedUserName = "adminN".ToUpperInvariant(),
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        NormalizedEmail = "adminN@gmail.com".ToUpperInvariant(),
+        SecurityStamp = Guid.NewGuid().ToString()
+    };
+    
     public static User NewUser = new User
     {
         Id = Guid.NewGuid(),

@@ -19,4 +19,17 @@ public static class TimeEntriesData
                 projectId,
                 projectTaskId
             );
+    
+    public static TimeEntry ExistingTimeEntry(Guid userId, ProjectId projectId, ProjectTaskId? projectTaskId)
+        =>
+            TimeEntry.New(
+                TimeEntryId.New(),
+                "NewTimeEntry",
+                _date.AddDays(4).AddMinutes(4),
+                _date.AddDays(6).AddMinutes(6),
+                1,
+                userId,
+                projectId,
+                projectTaskId
+            );
 }

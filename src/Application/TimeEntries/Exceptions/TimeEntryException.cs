@@ -17,7 +17,7 @@ public class TimeEntryAlreadyExistsException(TimeEntryId id)
     : TimeEntryException(id, $"Time entry already exists: {id}!");
 
 public class TimeEntryUnknownException(TimeEntryId id, Exception innerException)
-    : TimeEntryException(id, $"Unknown exception for the project under id: {id}!", innerException);
+    : TimeEntryException(id, $"Unknown exception for the project under id: {id} occured!", innerException);
 
 public class TimeEntryProjectNotFoundException(TimeEntryId id, ProjectId projectId)
     : TimeEntryException(id, $"Time entry project under id: {projectId} not found!");
@@ -31,3 +31,6 @@ public class TimeEntryEndDateMustBeAfterStartDate(DateTime startDate, DateTime e
 
 public class TimeEntryUserNotFoundException(Guid userId)
     : TimeEntryException(TimeEntryId.Empty(), $"Time entry user under id: {userId} not found!");
+    
+public class TimeEntryOverlapException(DateTime startTime, DateTime endTime)
+    : TimeEntryException(TimeEntryId.Empty(), $"Time entry overlap. Start date: {startTime}. End date: {endTime}!");

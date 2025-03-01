@@ -3,11 +3,9 @@ using Domain.Models.ProjectUsers;
 using Domain.Models.Projects;
 using Domain.Models.TimeEntries;
 using Domain.Models.Users;
-using Domain.Models.UsersTasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
 using Domain.Models.Roles;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -76,6 +74,26 @@ namespace Infrastructure.Persistence
                 await userManager.CreateAsync(usualUser, password);
                 await userManager.AddToRoleAsync(usualUser, "User");
 
+                // Add 5 more users with varied roles
+                var additionalUsers = new List<User>();
+                var userNames = new[] { "manager1", "sponsor1", "analyst1", "team1", "user3" };
+                var emails = userNames.Select(u => $"{u}@example.com").ToArray();
+                var roles = new[] { "Project manager", "Project sponsor", "Business analyst", "Project team member", "User" };
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var user = new User
+                    {
+                        Id = Guid.NewGuid(),
+                        UserName = userNames[i],
+                        Email = emails[i],
+                        EmailConfirmed = true
+                    };
+                    additionalUsers.Add(user);
+                    await userManager.CreateAsync(user, password);
+                    await userManager.AddToRoleAsync(user, roles[i]);
+                }
+
                 await context.SaveChangesAsync();
             }
         }
@@ -97,13 +115,19 @@ namespace Infrastructure.Persistence
                     throw new Exception("Users must be seeded before adding projects.");
                 }
 
-                var projects = new[]
+                var projects = new List<Project>();
+                for (int i = 1; i <= 20; i++)
                 {
-                    Project.New(ProjectId.New(), "Website Development", "Building a new company website",
-                        DateTime.UtcNow, adminUser.Id, "#73aaee", usualUser.Id),
-                    Project.New(ProjectId.New(), "Mobile App Upgrade", "Upgrading the mobile application",
-                        DateTime.UtcNow.AddDays(1), adminUser.Id, "#b8d7fb", usualUser.Id)
-                };
+                    projects.Add(Project.New(
+                        ProjectId.New(),
+                        $"Project {i}",
+                        $"Description for Project {i}",
+                        DateTime.UtcNow.AddDays(i),
+                        adminUser.Id,
+                        $"#{RandomColor()}",
+                        usualUser.Id
+                    ));
+                }
 
                 await context.Projects.AddRangeAsync(projects);
                 await context.SaveChangesAsync();
@@ -114,9 +138,13 @@ namespace Infrastructure.Persistence
         {
             using var scope = app.ApplicationServices.CreateScope();
             using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
             if (!context.ProjectTasks.Any())
             {
+                var users = await context.Users.ToListAsync();
+                var adminUser = users.FirstOrDefault(u => u.UserName == "adminUser");
+                var usualUser = users.FirstOrDefault(u => u.UserName == "usualUser");
                 var projects = await context.Projects.ToListAsync();
 
                 if (!projects.Any())
@@ -124,14 +152,24 @@ namespace Infrastructure.Persistence
                     throw new Exception("Projects must be seeded before adding project tasks.");
                 }
 
-                var projectTasks = new[]
+                var projectTasks = new List<ProjectTask>();
+                var random = new Random();
+                foreach (var project in projects)
                 {
-                    ProjectTask.New(ProjectTaskId.New(), projects[0].Id, "Frontend Development", 240,
-                        "Develop the website frontend"),
-                    ProjectTask.New(ProjectTaskId.New(), projects[0].Id, "Backend Integration", 180,
-                        "Integrate backend APIs"),
-                    ProjectTask.New(ProjectTaskId.New(), projects[1].Id, "UI Redesign", 300, "Redesign mobile app UI")
-                };
+                    for (int i = 1; i <= 5; i++) // 5 tasks per project, total 100
+                    {
+                        var creator = random.Next(2) == 0 ? adminUser : usualUser;
+                        projectTasks.Add(ProjectTask.New(
+                            ProjectTaskId.New(),
+                            project.Id,
+                            $"Task {i} for {project.Name}",
+                            random.Next(120, 480), // Estimated time between 2 and 8 hours
+                            $"Description for Task {i} in {project.Name}",
+                            DateTime.UtcNow.AddDays(random.Next(-30, 0)),
+                            creator.Id
+                        ));
+                    }
+                }
 
                 await context.ProjectTasks.AddRangeAsync(projectTasks);
                 await context.SaveChangesAsync();
@@ -152,55 +190,52 @@ namespace Infrastructure.Persistence
                 var projectRoles = roles.Where(x => x.RoleGroup == RoleGroups.Projects).ToList();
                 var projectManagerRole = roles.FirstOrDefault(r => r.Name == "Project manager");
                 var projectSponsorRole = roles.FirstOrDefault(r => r.Name == "Project sponsor");
+                var businessAnalystRole = roles.FirstOrDefault(r => r.Name == "Business analyst");
                 var teamMemberRole = projectRoles.FirstOrDefault(r => r.Name == "Project team member");
                 if (!projects.Any() || !users.Any() || projectManagerRole == null || projectSponsorRole == null ||
-                    teamMemberRole == null)
+                    businessAnalystRole == null || teamMemberRole == null)
                 {
                     throw new Exception("Projects, users, and roles must be seeded before adding project users.");
                 }
 
                 var adminUser = users.First(u => u.UserName == "adminUser");
                 var usualUser = users.First(u => u.UserName == "usualUser");
+                var manager1 = users.First(u => u.UserName == "manager1");
+                var sponsor1 = users.First(u => u.UserName == "sponsor1");
+                var analyst1 = users.First(u => u.UserName == "analyst1");
+                var team1 = users.First(u => u.UserName == "team1");
+                var user3 = users.First(u => u.UserName == "user3");
 
-                var projectUsers = new[]
+                var projectUsers = new List<ProjectUser>();
+                var random = new Random();
+                foreach (var project in projects)
                 {
-                    ProjectUser.New(ProjectUserId.New(), projects[0].Id, adminUser.Id, projectManagerRole.Id),
-                    ProjectUser.New(ProjectUserId.New(), projects[0].Id, usualUser.Id, projectSponsorRole.Id),
-                    ProjectUser.New(ProjectUserId.New(), projects[1].Id, usualUser.Id, teamMemberRole.Id)
-                };
+                    // Base associations for adminUser and usualUser
+                    projectUsers.Add(ProjectUser.New(ProjectUserId.New(), project.Id, adminUser.Id, projectManagerRole.Id));
+                    projectUsers.Add(ProjectUser.New(ProjectUserId.New(), project.Id, usualUser.Id, projectSponsorRole.Id));
+                    projectUsers.Add(ProjectUser.New(ProjectUserId.New(), project.Id, usualUser.Id, teamMemberRole.Id));
 
-                await context.ProjectUsers.AddRangeAsync(projectUsers);
-                await context.SaveChangesAsync();
-            }
-        }
-
-        public static async Task SeedUserTasks(this IApplicationBuilder app)
-        {
-            using var scope = app.ApplicationServices.CreateScope();
-            using var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
-
-            if (!context.UserTasks.Any())
-            {
-                var projectTasks = await context.ProjectTasks.ToListAsync();
-                var users = await context.Users.ToListAsync();
-
-                if (!projectTasks.Any() || !users.Any())
-                {
-                    throw new Exception("Project tasks, users, and roles must be seeded before adding user tasks.");
+                    // Random associations for additional users (1–2 roles per project per user, ensuring coverage)
+                    var additionalUsers = new[] { manager1, sponsor1, analyst1, team1, user3 };
+                    foreach (var user in additionalUsers)
+                    {
+                        var roleCount = random.Next(1, 3); // 1 or 2 roles per user per project
+                        var availableRoles = new[] { projectManagerRole, projectSponsorRole, businessAnalystRole, teamMemberRole }
+                            .Where(r => r.Name != (user == manager1 ? "Project manager" : 
+                                           user == sponsor1 ? "Project sponsor" : 
+                                           user == analyst1 ? "Business analyst" : 
+                                           user == team1 ? "Project team member" : null))
+                            .ToArray();
+                        for (int i = 0; i < roleCount && availableRoles.Length > 0; i++)
+                        {
+                            var role = availableRoles[random.Next(availableRoles.Length)];
+                            projectUsers.Add(ProjectUser.New(ProjectUserId.New(), project.Id, user.Id, role.Id));
+                            availableRoles = availableRoles.Where(r => r.Id != role.Id).ToArray(); // Avoid duplicates
+                        }
+                    }
                 }
 
-                var adminUser = users.First(u => u.UserName == "adminUser");
-                var usualUser = users.First(u => u.UserName == "usualUser");
-
-                var userTasks = new[]
-                {
-                    UserTask.New(UserTaskId.New(), projectTasks[0].Id, adminUser.Id),
-                    UserTask.New(UserTaskId.New(), projectTasks[0].Id, usualUser.Id),
-                    UserTask.New(UserTaskId.New(), projectTasks[1].Id, usualUser.Id)
-                };
-
-                await context.UserTasks.AddRangeAsync(userTasks);
+                await context.ProjectUsers.AddRangeAsync(projectUsers);
                 await context.SaveChangesAsync();
             }
         }
@@ -214,26 +249,73 @@ namespace Infrastructure.Persistence
             {
                 var projects = await context.Projects.ToListAsync();
                 var projectTasks = await context.ProjectTasks.ToListAsync();
+                var projectUsers = await context.ProjectUsers
+                    .Include(pu => pu.User)
+                    .Include(pu => pu.Project)
+                    .ToListAsync();
                 var users = await context.Users.ToListAsync();
 
-                if (!projects.Any() || !projectTasks.Any() || !users.Any())
+                if (!projects.Any() || !projectTasks.Any() || !projectUsers.Any() || !users.Any())
                 {
                     throw new Exception(
-                        "Projects, project tasks, and users must be seeded before adding time entries.");
+                        "Projects, project tasks, project users, and users must be seeded before adding time entries.");
                 }
 
-                var adminUser = users.First(u => u.UserName == "adminUser");
-                var usualUser = users.First(u => u.UserName == "usualUser");
+                var timeEntries = new List<TimeEntry>();
+                var random = new Random();
+                var usedTimes = new HashSet<(Guid UserId, DateTime StartTime, DateTime EndTime)>();
 
-                var timeEntries = new[]
+                foreach (var projectUser in projectUsers)
                 {
-                    TimeEntry.New(TimeEntryId.New(), "Coding frontend", DateTime.UtcNow.AddHours(-2),
-                        DateTime.UtcNow.AddHours(-1), 60, adminUser.Id, projects[0].Id, projectTasks[0].Id),
-                    TimeEntry.New(TimeEntryId.New(), "Testing backend", DateTime.UtcNow.AddHours(-4),
-                        DateTime.UtcNow.AddHours(-3), 60, usualUser.Id, projects[0].Id, projectTasks[1].Id),
-                    TimeEntry.New(TimeEntryId.New(), "UI redesign", DateTime.UtcNow.AddHours(-6),
-                        DateTime.UtcNow.AddHours(-5), 60, usualUser.Id, projects[1].Id, projectTasks[2].Id)
-                };
+                    var user = projectUser.User;
+                    var project = projectUser.Project;
+                    var projectTasksForProject = projectTasks.Where(pt => pt.ProjectId == project.Id && pt.CreatorId == projectUser.UserId).ToList();
+                    if (projectTasksForProject.Count == 0)
+                    {
+                        continue;
+                    }
+                    var maxEntries = 5; // 5 entries per user per project, total ~600–700
+
+                    for (int i = 1; i <= maxEntries; i++)
+                    {
+                        bool timeOverlap;
+                        DateTime startTime, endTime;
+                        ProjectTask? selectedProjectTask = null;
+                        do
+                        {
+                            startTime = DateTime.UtcNow.AddDays(random.Next(-60, 0)).AddHours(random.Next(8, 18)); // Work hours: 8:00–18:00
+                            endTime = startTime.AddHours(random.Next(1, 4)); // Duration: 1–4 hours
+
+                            timeOverlap = usedTimes.Any(t =>
+                                t.UserId == user.Id &&
+                                (
+                                    (startTime < t.EndTime && (endTime > t.StartTime)) ||
+                                    (t.StartTime < endTime && (t.EndTime > startTime))
+                                ));
+
+                            // Randomly select a ProjectTask for this project if available
+                            if (projectTasksForProject.Any())
+                            {
+                                selectedProjectTask = projectTasksForProject[random.Next(projectTasksForProject.Count)];
+                            }
+                        } while (timeOverlap);
+
+                        usedTimes.Add((user.Id, startTime, endTime));
+
+                        timeEntries.Add(TimeEntry.New(
+                            TimeEntryId.New(),
+                            selectedProjectTask != null
+                                ? $"Work on {selectedProjectTask.Name} - Entry {i} for {user.UserName}"
+                                : $"Work on {project.Name} - Entry {i} for {user.UserName}",
+                            startTime,
+                            endTime,
+                            (int)endTime.Subtract(startTime).TotalMinutes,
+                            user.Id,
+                            project.Id,
+                            selectedProjectTask.Id
+                        ));
+                    }
+                }
 
                 await context.TimeEntries.AddRangeAsync(timeEntries);
                 await context.SaveChangesAsync();
@@ -247,8 +329,15 @@ namespace Infrastructure.Persistence
             await app.SeedProjects();
             await app.SeedProjectTasks();
             await app.SeedProjectUsers();
-            await app.SeedUserTasks();
             await app.SeedTimeEntries();
+        }
+
+        private static string RandomColor()
+        {
+            var random = new Random();
+            byte[] bytes = new byte[3];
+            random.NextBytes(bytes);
+            return $"{bytes[0]:X2}{bytes[1]:X2}{bytes[2]:X2}";
         }
     }
 }

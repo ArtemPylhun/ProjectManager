@@ -5,6 +5,7 @@ using Domain.Models.ProjectTasks;
 using Domain.Models.TimeEntries;
 using Microsoft.EntityFrameworkCore;
 using Optional;
+using Org.BouncyCastle.Asn1.X509;
 
 namespace Infrastructure.Persistence.Repositories;
 
@@ -13,10 +14,12 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
     public async Task<IReadOnlyList<TimeEntry>> GetAll(CancellationToken cancellationToken)
     {
         return await context.TimeEntries
+            .AsNoTracking()
             .Include(x => x.Project)
             .Include(x => x.ProjectTask)
             .Include(x => x.User)
-            .AsNoTracking()
+            .OrderBy(x => x.StartDate)
+            .ThenBy(x => x.Description)
             .ToListAsync(cancellationToken);
     }
 
@@ -25,10 +28,12 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
     {
         return await context.TimeEntries
             .Where(x => x.ProjectTaskId == projectTaskId)
+            .AsNoTracking()
             .Include(x => x.Project)
             .Include(x => x.ProjectTask)
             .Include(x => x.User)
-            .AsNoTracking()
+            .OrderBy(x => x.StartDate)
+            .ThenBy(x => x.Description)
             .ToListAsync(cancellationToken);
     }
 
@@ -37,10 +42,12 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
     {
         return await context.TimeEntries
             .Where(x => x.ProjectId == projectId)
+            .AsNoTracking()
             .Include(x => x.Project)
             .Include(x => x.ProjectTask)
             .Include(x => x.User)
-            .AsNoTracking()
+            .OrderBy(x => x.StartDate)
+            .ThenBy(x => x.Description)
             .ToListAsync(cancellationToken);
     }
 
@@ -52,16 +59,29 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
             .Include(x => x.ProjectTask)
             .Include(x => x.User)
             .AsNoTracking()
+            .OrderBy(x => x.StartDate)
+            .ThenBy(x => x.Description)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<(IReadOnlyList<TimeEntry> TimeEntries, int TotalCount)> GetAllPaginated(int page, int pageSize, CancellationToken cancellationToken)
-    {
-        var query = context.TimeEntries
-            .AsNoTracking()
-            .Include(x => x.Project)
-            .Include(x => x.ProjectTask)
-            .Include(x => x.User);
+   public async Task<(IReadOnlyList<TimeEntry> TimeEntries, int TotalCount)> GetAllPaginated(int page, int pageSize, string search, CancellationToken cancellationToken)
+   {
+       IQueryable<TimeEntry> query = context.TimeEntries
+           .AsNoTracking()
+           .Include(x => x.Project)
+           .Include(x => x.ProjectTask)
+           .Include(x => x.User)
+           .OrderBy(x => x.StartDate)
+           .ThenBy(x => x.Description);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(te =>
+                te.Description.ToLower().Contains(search.ToLower()) ||
+                te.User.UserName.ToLower().Contains(search.ToLower()) ||
+                te.Project.Name.ToLower().Contains(search.ToLower()) ||
+                te.ProjectTask.Name.ToLower().Contains(search.ToLower()));
+        }
 
         var totalCount = await query.CountAsync(cancellationToken);
         var timeEntries = await query
@@ -72,21 +92,33 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
         return (timeEntries, totalCount);
     }
 
-    public async Task<(IReadOnlyList<TimeEntry> TimeEntries, int TotalCount)> GetAllByUserIdPaginated(Guid userId, int page, int pageSize, CancellationToken cancellationToken)
+    public async Task<(IReadOnlyList<TimeEntry> TimeEntries, int TotalCount)> GetAllByUserIdPaginated(Guid userId, int page, int pageSize, string search, CancellationToken cancellationToken)
     {
-        var query = context.TimeEntries
+        IQueryable<TimeEntry> query = context.TimeEntries
             .AsNoTracking()
             .Include(x => x.Project)
             .Include(x => x.ProjectTask)
-            .Include(x => x.User);
+            .Include(x => x.User)
+            .Where(x => x.UserId == userId)
+            .OrderBy(x => x.StartDate)
+            .ThenBy(x => x.Description);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(te =>
+                te.Description.ToLower().Contains(search.ToLower()) ||
+                te.User.UserName.ToLower().Contains(search.ToLower()) ||
+                te.Project.Name.ToLower().Contains(search.ToLower()) ||
+                te.ProjectTask.Name.ToLower().Contains(search.ToLower()));
+        }
 
         var totalCount = await query.CountAsync(cancellationToken);
-        var projects = await query
+        var timeEntries = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return (projects, totalCount);
+        return (timeEntries, totalCount);
     }
     
     public async Task<Option<TimeEntry>> GetById(TimeEntryId id, CancellationToken cancellationToken)
@@ -128,6 +160,24 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<bool> HasTimeOverlap(Guid userId, DateTime startTime, DateTime? endTime, TimeEntryId? excludeId = null, CancellationToken cancellationToken = default)
+    {
+        var query = context.TimeEntries
+            .Where(te => te.UserId == userId);
+
+        if (excludeId != null)
+        {
+            query = query.Where(te => te.Id != excludeId);
+        }
+
+        var overlaps = await query.AnyAsync(te =>
+                (startTime < te.EndDate && (endTime == null || endTime > te.StartDate)) ||
+                (te.StartDate < endTime && (te.EndDate == null || te.EndDate > startTime)),
+            cancellationToken);
+
+        return overlaps;
+    }
+    
     public async Task<TimeEntry> Add(TimeEntry timeEntry, CancellationToken cancellationToken)
     {
         await context.TimeEntries.AddAsync(timeEntry, cancellationToken);
@@ -150,12 +200,11 @@ public class TimeEntryRepository(ApplicationDbContext context) : ITimeEntryQueri
         }
         else
         {
-            context.Entry(existingEntry).CurrentValues.SetValues(timeEntry); // Update tracked entity
+            context.Entry(existingEntry).CurrentValues.SetValues(timeEntry); 
         }
 
         await context.SaveChangesAsync(cancellationToken);
 
-        // Reload the entity to ensure it reflects the database state
         return await context.TimeEntries
             .Include(x => x.Project)
             .Include(x => x.ProjectTask)

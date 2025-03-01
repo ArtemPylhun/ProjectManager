@@ -1,0 +1,75 @@
+@model (string Email, bool NoEntries, bool InsufficientMinutes, int CurrentMinutes)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Entry Reminder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #73aaee; /* Using your blue color from CSS (#73aaee) */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #526ab7; /* Darker blue from your design (#526ab7) */
+        }
+        .content {
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 10px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        .highlight {
+            color: #73aaee; /* Match your blue design */
+            font-weight: bold;
+        }
+        .warning {
+            color: #ff4d4f; /* Red for warnings, matching your "Remove" button color */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Time Entry Reminder</h1>
+    </div>
+    <div class="content">
+        <p>Hello,</p>
+        @if (Model.NoEntries)
+        {
+            <p class="warning">You have not reported any time entries for yesterday. Please log your time to ensure accurate tracking.</p>
+        }
+        @if (Model.InsufficientMinutes)
+        {
+            <p class="warning">You have only reported <span class="highlight">@Model.CurrentMinutes</span> minutes yesterday, which is less than the required 480 minutes (8 hours). Please update your time entries.</p>
+        }
+        <p>Stay on top of your time tracking to maintain accurate records.</p>
+    </div>
+    <div class="footer">
+        <p>© 2025 Your Time Tracking System. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

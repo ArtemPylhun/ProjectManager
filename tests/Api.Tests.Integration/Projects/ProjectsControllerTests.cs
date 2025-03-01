@@ -248,6 +248,7 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
         Context.Projects.RemoveRange(Context.Projects);
         Context.UserRoles.RemoveRange(Context.UserRoles);
         Context.Roles.RemoveRange(Context.Roles);

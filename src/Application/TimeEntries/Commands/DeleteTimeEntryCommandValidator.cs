@@ -1,3 +1,4 @@
+using System.Data;
 using FluentValidation;
 
 namespace Application.TimeEntries.Commands;
@@ -6,6 +7,6 @@ public class DeleteTimeEntryCommandValidator: AbstractValidator<DeleteTimeEntryC
 {
     public DeleteTimeEntryCommandValidator()
     {
-        
+        RuleFor(x => x.Id).NotEmpty();
     }
 }

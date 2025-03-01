@@ -1,6 +1,6 @@
 using Domain.Models.Projects;
 using Domain.Models.TimeEntries;
-using Domain.Models.UsersTasks;
+using Domain.Models.Users;
 
 namespace Domain.Models.ProjectTasks;
 
@@ -11,13 +11,15 @@ public class ProjectTask
     public string Name { get; set; }
     public int EstimatedTime { get; set; }
 
+    public DateTime CreatedAt { get; private set; }
     public string Description { get; set; }
     public ProjectTaskStatuses Status { get; set; }
     public ProjectId ProjectId { get; set; }
     public Project? Project { get; set; }
 
+    public Guid CreatorId { get; set; }
+    public User? Creator { get; set; }
     public ICollection<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();
-    public ICollection<UserTask> UsersTask { get; set; } = new List<UserTask>();
 
     public enum ProjectTaskStatuses
     {
@@ -28,7 +30,8 @@ public class ProjectTask
         Done
     }
 
-    private ProjectTask(ProjectTaskId id, ProjectId projectId, string name, int estimatedTime, string description)
+    private ProjectTask(ProjectTaskId id, ProjectId projectId, string name, int estimatedTime, string description,
+        DateTime createdAt, Guid creatorId)
     {
         Id = id;
         ProjectId = projectId;
@@ -36,12 +39,17 @@ public class ProjectTask
         EstimatedTime = estimatedTime;
         Description = description;
         Status = ProjectTaskStatuses.New;
+        CreatedAt = createdAt;
+        CreatorId = creatorId;
     }
 
-    public static ProjectTask New(ProjectTaskId id, ProjectId projectId, string name, int estimatedTime, string description) =>
-        new(id, projectId, name, estimatedTime, description);
+    public static ProjectTask New(ProjectTaskId id, ProjectId projectId, string name, int estimatedTime,
+        string description, DateTime createdAt,
+        Guid creatorId) =>
+        new(id, projectId, name, estimatedTime, description, createdAt, creatorId);
 
-    public void UpdateDetails(ProjectId projectId, string name, int estimatedTime, string description, ProjectTaskStatuses status)
+    public void UpdateDetails(ProjectId projectId, string name, int estimatedTime, string description,
+        ProjectTaskStatuses status)
     {
         ProjectId = projectId;
         Name = name;

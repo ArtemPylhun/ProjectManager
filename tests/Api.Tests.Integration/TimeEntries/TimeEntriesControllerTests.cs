@@ -19,14 +19,16 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     private readonly Project _project;
     private readonly ProjectTask _projectTask;
     private readonly TimeEntry _timeEntry;
+    private readonly TimeEntry _timeEntry2;
 
     public TimeEntriesControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
         _mainUser1 = UsersData.MainUser;
         _mainUser2 = UsersData.MainUser2;
         _project = ProjectsData.ExistingProject2(_mainUser2.Id, _mainUser2.Id);
-        _projectTask = ProjectTasksData.ExistingProjectTask(_project.Id);
+        _projectTask = ProjectTasksData.ExistingProjectTask(_project.Id, _mainUser1.Id);
         _timeEntry = TimeEntriesData.NewTimeEntry(_mainUser2.Id, _project.Id, _projectTask.Id);
+        _timeEntry2 = TimeEntriesData.ExistingTimeEntry(_mainUser2.Id, _project.Id, _projectTask.Id);
     }
 
     [Fact]
@@ -35,8 +37,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         //Arrange
         var request = new TimeEntryCreateDto(
             _timeEntry.Description,
-            _timeEntry.StartDate,
-            _timeEntry.EndDate,
+            _timeEntry.StartDate.AddDays(-10),
+            _timeEntry.EndDate.AddDays(-5),
             _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId.Value,
@@ -64,8 +66,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         //Arrange
         var request = new TimeEntryCreateDto(
             _timeEntry.Description,
-            _timeEntry.StartDate,
-            _timeEntry.EndDate,
+            _timeEntry.StartDate.AddDays(-10),
+            _timeEntry.EndDate.AddDays(-5),
             _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId.Value,
@@ -83,8 +85,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         //Arrange
         var request = new TimeEntryCreateDto(
             _timeEntry.Description,
-            _timeEntry.StartDate,
-            _timeEntry.EndDate,
+            _timeEntry.StartDate.AddDays(-10),
+            _timeEntry.EndDate.AddDays(-5),
             _timeEntry.Minutes,
             _timeEntry.UserId,
             ProjectId.New().Value,
@@ -134,6 +136,25 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
         
     }
+    
+    [Fact]
+    public async Task ShouldNotCreateTimeEntryBecauseHasOverlap()
+    {
+        //Arrange
+        var request = new TimeEntryCreateDto(
+            _timeEntry.Description,
+            _timeEntry2.StartDate,
+            _timeEntry2.EndDate,
+            _timeEntry.Minutes,
+            _timeEntry.UserId,
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
+        //Act
+        var response = await Client.PostAsJsonAsync($"time-entries/create", request);
+        //Assert
+        response.IsSuccessStatusCode.Should().BeFalse();
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }   
 
     [Fact]
     public async Task ShouldDeleteTimeEntry()
@@ -169,10 +190,10 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     public async Task ShouldUpdateTimeEntry()
     {
         //Arrange
-        var timeEntryId = _timeEntry.Id;
+        var timeEntryDescription = "New Time Entry Description";
         var request = new TimeEntryUpdateDto(
             _timeEntry.Id.Value,
-            "New time entry",
+            timeEntryDescription,
             _timeEntry.StartDate,
             _timeEntry.EndDate,
             _timeEntry.Minutes,
@@ -208,8 +229,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         var request = new TimeEntryUpdateDto(
             timeEntryId.Value,
             _timeEntry.Description,
-            _timeEntry.StartDate,
-            _timeEntry.EndDate,
+            _timeEntry.StartDate.AddDays(-10),
+            _timeEntry.EndDate.AddDays(-5),
             _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId.Value,
@@ -242,6 +263,27 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     }
     
     [Fact]
+    public async Task ShouldNotUpdateTimeEntryBecauseHasOverlap()
+    {
+        //Arrange
+        var timeEntryId = _timeEntry.Id;
+        var request = new TimeEntryUpdateDto(
+            _timeEntry.Id.Value,
+            _timeEntry.Description,
+            _timeEntry2.StartDate,
+            _timeEntry2.EndDate,
+            _timeEntry.Minutes,
+            _timeEntry.UserId,
+            _timeEntry.ProjectId.Value,
+            _timeEntry.ProjectTaskId.Value);
+        //Act
+        var response = await Client.PutAsJsonAsync($"time-entries/update", request);
+        //Assert
+        response.IsSuccessStatusCode.Should().BeFalse();
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }   
+    
+    [Fact]
     public async Task ShouldNotUpdateTimeEntryBecauseUserNotFound()
     {
         //Arrange
@@ -270,8 +312,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         var request = new TimeEntryUpdateDto(
             _timeEntry.Id.Value,
             _timeEntry.Description,
-            _timeEntry.StartDate,
-            _timeEntry.EndDate,
+            _timeEntry.StartDate.AddDays(-10),
+            _timeEntry.EndDate.AddDays(-5),
             _timeEntry.Minutes,
             _timeEntry.UserId,
             ProjectId.New().Value,
@@ -290,8 +332,8 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         var request = new TimeEntryUpdateDto(
             _timeEntry.Id.Value,
             _timeEntry.Description,
-            _timeEntry.StartDate,
-            _timeEntry.EndDate,
+            _timeEntry.StartDate.AddDays(-10),
+            _timeEntry.EndDate.AddDays(-5),
             _timeEntry.Minutes,
             _timeEntry.UserId,
             _timeEntry.ProjectId.Value,
@@ -310,6 +352,7 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
         await Context.Projects.AddAsync(_project);
         await Context.ProjectTasks.AddAsync(_projectTask);
         await Context.TimeEntries.AddAsync(_timeEntry);
+        await Context.TimeEntries.AddAsync(_timeEntry2);
         await SaveChangesAsync();
     }
 

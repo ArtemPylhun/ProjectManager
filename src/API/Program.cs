@@ -122,7 +122,11 @@ builder.Services.AddCors(c =>
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
+
 var app = builder.Build();
+
+app.UseStaticFiles();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {

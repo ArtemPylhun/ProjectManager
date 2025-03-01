@@ -18,10 +18,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(u => u.User)
             .HasForeignKey(u => u.UserId);
         
-        builder.HasMany(x => x.UserTasks)
-            .WithOne(u => u.User)
-            .HasForeignKey(u => u.UserId);
-        
         builder.HasMany(x => x.ProjectUsers)
             .WithOne(u => u.User)
             .HasForeignKey(u => u.UserId);

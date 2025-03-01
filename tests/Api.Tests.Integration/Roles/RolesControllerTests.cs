@@ -16,7 +16,7 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
     public RolesControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
         _userRole = RolesData.UserRole;
-        _adminRole = RolesData.AdminRole;
+        _adminRole = RolesData.AdminRole2;
     }
 
     

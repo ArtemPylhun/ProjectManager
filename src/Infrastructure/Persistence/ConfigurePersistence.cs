@@ -65,10 +65,7 @@ public static class ConfigurePersistence
         services.AddScoped<ITimeEntryRepository>(provider => provider.GetRequiredService<TimeEntryRepository>());
         services.AddScoped<ITimeEntryQueries>(provider => provider.GetRequiredService<TimeEntryRepository>());
 
-        services.AddScoped<UserTaskRepository>();
-        services.AddScoped<IUserTaskRepository>(provider => provider.GetRequiredService<UserTaskRepository>());
-        services.AddScoped<IUserTaskQueries>(provider => provider.GetRequiredService<UserTaskRepository>());
-        
+       
         services.AddScoped<JwtProvider>();
         services.AddScoped<IJwtProvider>(provider => provider.GetRequiredService<JwtProvider>());
     }

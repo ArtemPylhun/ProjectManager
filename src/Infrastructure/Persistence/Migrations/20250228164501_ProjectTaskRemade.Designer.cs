@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250228164501_ProjectTaskRemade")]
+    partial class ProjectTaskRemade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,9 +59,8 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("project_id");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
                         .HasColumnName("status");
 
                     b.HasKey("Id")
@@ -100,9 +102,8 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("RoleId")
                         .HasDatabaseName("ix_project_users_role_id");
 
-                    b.HasIndex("UserId", "ProjectId", "RoleId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_project_users_user_id_project_id_role_id");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_project_users_user_id");
 
                     b.ToTable("project_users", (string)null);
                 });

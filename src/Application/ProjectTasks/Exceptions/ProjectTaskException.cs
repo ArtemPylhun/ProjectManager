@@ -20,3 +20,6 @@ public class ProjectTaskUnknownException(ProjectTaskId id, Exception innerExcept
 
 public class ProjectForTaskNotFoundException(ProjectTaskId id, ProjectId projectId)
     : ProjectTaskException(id, $"Project under id: {projectId} for this task not found!");
+    
+public class CreatorNotFoundException(Guid creatorId)
+    :ProjectTaskException(ProjectTaskId.Empty(), $"Creator under id: {creatorId} in project task not found!");

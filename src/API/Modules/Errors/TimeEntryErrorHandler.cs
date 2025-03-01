@@ -14,7 +14,7 @@ public static class TimeEntryErrorHandler
                 TimeEntryNotFoundException or TimeEntryProjectNotFoundException or TimeEntryProjectTaskNotFoundException
                     or TimeEntryUserNotFoundException => StatusCodes
                         .Status404NotFound,
-                TimeEntryAlreadyExistsException or TimeEntryEndDateMustBeAfterStartDate => StatusCodes
+                TimeEntryAlreadyExistsException or TimeEntryEndDateMustBeAfterStartDate or TimeEntryOverlapException => StatusCodes
                     .Status409Conflict,
                 TimeEntryUnknownException => StatusCodes.Status500InternalServerError,
                 _ => throw new NotImplementedException("TimeEntry error handler is not implemented")

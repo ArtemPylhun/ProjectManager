@@ -5,7 +5,6 @@ using Domain.Models.ProjectUsers;
 using Domain.Models.Roles;
 using Domain.Models.TimeEntries;
 using Domain.Models.Users;
-using Domain.Models.UsersTasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +15,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<Project> Projects { get; set; }
     public DbSet<TimeEntry> TimeEntries { get; set; }
-    public DbSet<UserTask> UserTasks { get; set; }
     public DbSet<ProjectTask> ProjectTasks  { get; set; }
     public DbSet<ProjectUser> ProjectUsers  { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)

@@ -27,7 +27,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         _mainUser = UsersData.MainUser;
         _mainUser2 = UsersData.MainUser2;
         _userForDeletion = UsersData.UserForDeletion;
-        _adminRole = RolesData.AdminRole;
+        _adminRole = RolesData.AdminRole2;
         _userRole = RolesData.UserRole;
     }
 

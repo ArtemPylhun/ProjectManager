@@ -81,7 +81,7 @@ public class
         }
         catch (Exception exception)
         {
-            return new ProjectTaskUnknownException(ProjectTaskId.Empty(), exception);
+            return new ProjectTaskUnknownException(entity.Id, exception);
         }
     }
 }
