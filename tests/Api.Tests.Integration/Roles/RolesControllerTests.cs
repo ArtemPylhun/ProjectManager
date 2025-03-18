@@ -27,7 +27,7 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         var name = "TestRole";
         var request = new RoleDto
         (
-            Id: null,
+            Id: Guid.NewGuid(),
             Name: name,
             RoleGroups.General
         );
@@ -49,7 +49,7 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         // Arrange
         var role = new RoleDto
         (
-            Id: null,
+            Id: Guid.NewGuid(),
             Name: _userRole.Name,
             RoleGroups.General
 
@@ -85,7 +85,7 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
         var roleNotFound = "RoleNotFound";
         var role = new RoleDto
         (
-            Id: null,
+            Id: Guid.NewGuid(),
             Name: roleNotFound,
             RoleGroups.General
 
@@ -166,16 +166,15 @@ public class RolesControllerTests : BaseIntegrationTest, IAsyncLifetime
     
     public async Task InitializeAsync()
     {
-        await Context.Roles.AddAsync(_userRole);
-        await Context.Roles.AddAsync(_adminRole);
+        await RoleManager.CreateAsync(_userRole);
+        await RoleManager.CreateAsync(_adminRole);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.UserRoles.RemoveRange(Context.UserRoles);
-        Context.Roles.RemoveRange(Context.Roles);
         Context.Users.RemoveRange(Context.Users);
+        Context.Roles.RemoveRange(Context.Roles);
         await SaveChangesAsync();
     }
 }

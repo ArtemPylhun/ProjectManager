@@ -22,8 +22,8 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public ProjectUsersControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
-        _mainUser = UsersData.MainUser2;
         _creatorRole = RolesData.Creator1Role;
+        _mainUser = UsersData.MainUserForProjectUser;
         _existingProject2 = ProjectsData.ExistingProject2(_mainUser.Id, _mainUser.Id);
         _existingProject = ProjectsData.ExistingProjectForProjectUser(_mainUser.Id, _mainUser.Id);
         _existingProjectUser = ProjectUsersData.ExistingProjectUser(_existingProject.Id, _mainUser.Id, _creatorRole.Id);
@@ -173,22 +173,20 @@ public class ProjectUsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await Context.Users.AddAsync(_mainUser);
+        await RoleManager.CreateAsync(_creatorRole);
+        await UserManager.CreateAsync(_mainUser);
+        await SaveChangesAsync();
         await Context.Projects.AddAsync(_existingProject);
         await Context.Projects.AddAsync(_existingProject2);
-        await Context.Roles.AddAsync(_creatorRole);
-        await SaveChangesAsync();
         await Context.ProjectUsers.AddAsync(_existingProjectUser);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
-        Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
         Context.ProjectUsers.RemoveRange(Context.ProjectUsers);
         Context.Projects.RemoveRange(Context.Projects);
         Context.Users.RemoveRange(Context.Users);
-        Context.UserRoles.RemoveRange(Context.UserRoles);
         Context.Roles.RemoveRange(Context.Roles);
         await SaveChangesAsync();
     }

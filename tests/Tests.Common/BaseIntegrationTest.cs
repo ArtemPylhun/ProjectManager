@@ -49,7 +49,6 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestWebFact
                 AllowAutoRedirect = false,
             });
 
-        // Use test data for generating a JWT token
         SetAdminAuthorizationHeaderAsync().GetAwaiter().GetResult();
     }
 

@@ -1,0 +1,65 @@
+@model (string Email, string UserName)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verified</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #73aaee; /* Using your blue color (#73aaee) */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #526ab7; /* Darker blue (#526ab7) */
+        }
+        .content {
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 10px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        .highlight {
+            color: #73aaee; /* Match your blue design */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Email Verified Successfully!</h1>
+    </div>
+    <div class="content">
+        <p>Hello <span class="highlight">@Model.UserName</span>,</p>
+        <p>Your email address (<span class="highlight">@Model.Email</span>) has been successfully verified. You can now fully access your account and start using our platform.</p>
+        Here is the link to login to your account: <a href="http://localhost:5173/login">Login</a>
+        <p>Thank you for joining us, and enjoy your time tracking experience!</p>
+    </div>
+    <div class="footer">
+        <p>© 2025 Your Time Tracking System. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

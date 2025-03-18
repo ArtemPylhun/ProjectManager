@@ -7,7 +7,7 @@ using MimeKit;
 
 namespace Infrastructure.Services;
 
-public class EmailService(IConfiguration configuration, ILogger<EmailService> logger) : IEmailService
+public class EmailService(IConfiguration configuration) : IEmailService
 {
     private readonly string _smtpHost = configuration["EmailSettings:SmtpHost"];
     private readonly int _smtpPort = int.Parse(configuration["EmailSettings:SmtpPort"]);
@@ -40,17 +40,11 @@ public class EmailService(IConfiguration configuration, ILogger<EmailService> lo
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
-
-            logger.LogInformation($"Email sent to {to}: {subject}");
         }
         catch (Exception ex)
         {
-            logger.LogError($"Failed to send email to {to}: {ex.Message}");
+            throw new Exception("Failed to send email", ex);
         }
     }
-
-    public Task SendEmail(string to, string subject, string body)
-    {
-        throw new NotImplementedException();
-    }
+    
 }

@@ -21,10 +21,11 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     private readonly TimeEntry _timeEntry;
     private readonly TimeEntry _timeEntry2;
 
+
     public TimeEntriesControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
-        _mainUser1 = UsersData.MainUser;
-        _mainUser2 = UsersData.MainUser2;
+        _mainUser1 = UsersData.MainUserForTimeEntry;
+        _mainUser2 = UsersData.MainUserForTimeEntry2;
         _project = ProjectsData.ExistingProject2(_mainUser2.Id, _mainUser2.Id);
         _projectTask = ProjectTasksData.ExistingProjectTask(_project.Id, _mainUser1.Id);
         _timeEntry = TimeEntriesData.NewTimeEntry(_mainUser2.Id, _project.Id, _projectTask.Id);
@@ -347,8 +348,9 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     
     public async Task InitializeAsync()
     {
-        await Context.Users.AddAsync(_mainUser2);
-        await Context.Users.AddAsync(_mainUser1);
+        await UserManager.CreateAsync(_mainUser1);
+        await UserManager.CreateAsync(_mainUser2);
+        await SaveChangesAsync();
         await Context.Projects.AddAsync(_project);
         await Context.ProjectTasks.AddAsync(_projectTask);
         await Context.TimeEntries.AddAsync(_timeEntry);
@@ -360,10 +362,9 @@ public class TimeEntriesControllerTests: BaseIntegrationTest, IAsyncLifetime
     {
         Context.TimeEntries.RemoveRange(Context.TimeEntries);
         Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
-        Context.ProjectUsers.RemoveRange(Context.ProjectUsers);
         Context.Projects.RemoveRange(Context.Projects);
-        Context.Users.RemoveRange(Context.Users); 
         Context.Roles.RemoveRange(Context.Roles);
+        Context.Users.RemoveRange(Context.Users);
         await SaveChangesAsync();
     }
 }

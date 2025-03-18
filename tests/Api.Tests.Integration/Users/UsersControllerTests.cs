@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
 using API.DTOs;
@@ -23,12 +24,12 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public UsersControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
+        _adminRole = RolesData.AdminRole3;
+        _userRole = RolesData.UserRole2;
         _newUser = UsersData.NewUser;
         _mainUser = UsersData.MainUser;
         _mainUser2 = UsersData.MainUser2;
         _userForDeletion = UsersData.UserForDeletion;
-        _adminRole = RolesData.AdminRole2;
-        _userRole = RolesData.UserRole;
     }
 
     [Fact]
@@ -48,13 +49,26 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
 
-        var responseUser = await response.ToResponseModel<UserDto>();
-        var userId = responseUser.Id;
-
-        var dbUser = await Context.Users.FirstAsync(x => x.Id == userId);
-        dbUser.UserName.Should().Be(userName);
+        // Retrieve the user from the database
+        var dbUser = await Context.Users.FirstOrDefaultAsync(x => x.Email == email);
+        dbUser.Should().NotBeNull();
+        dbUser!.UserName.Should().Be(userName);
         dbUser.Email.Should().Be(email);
-        dbUser.PasswordHash.Should().NotBeEmpty();
+        var isUserInRole = await UserManager.IsInRoleAsync(dbUser, "User");
+        isUserInRole.Should().BeTrue();
+        UserManager.PasswordHasher.VerifyHashedPassword(dbUser, dbUser.PasswordHash!, _password)
+            .Should().Be(PasswordVerificationResult.Success);
+
+        // Verify the token
+        var handler = new JwtSecurityTokenHandler();
+        var responseToken = await response.Content.ReadAsStringAsync();
+        responseToken.Should().NotBeNullOrEmpty();
+
+        var token = handler.ReadJwtToken(responseToken);
+        token.Should().NotBeNull();
+        token.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == dbUser.Id.ToString());
+        token.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Email && c.Value == dbUser.Email);
+        token.Claims.Should().Contain(c => c.Type == "roles" && c.Value == "User");
     }
 
     [Fact]
@@ -106,7 +120,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        
+
         var dbUser = await Context.Roles.FindAsync(userId);
         dbUser.Should().BeNull();
     }
@@ -124,8 +138,8 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
-    
+
+
     [Fact]
     public async Task ShouldUpdateUser()
     {
@@ -137,7 +151,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: _mainUser.Id,
             Email: email,
             UserName: userName
-            );
+        );
 
         // Act
         var response = await Client.PutAsJsonAsync("users/update", request);
@@ -164,7 +178,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: _newUser.Id,
             Email: email,
             UserName: userName
-            );
+        );
 
         // Act
         var response = await Client.PutAsJsonAsync("users/update", request);
@@ -174,9 +188,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    
-    
-    
+
     [Fact]
     public async Task ShouldNotUpdateUserBecauseUserNameDuplicated()
     {
@@ -187,7 +199,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: _mainUser.Id,
             Email: _mainUser2.Email,
             UserName: userName
-            );
+        );
 
         // Act
         var response = await Client.PutAsJsonAsync("users/update", request);
@@ -207,7 +219,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
             Id: _mainUser.Id,
             Email: email,
             UserName: _mainUser.UserName
-            );
+        );
 
         // Act
         var response = await Client.PutAsJsonAsync("users/update", request);
@@ -216,7 +228,7 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
-    
+
 
     [Fact]
     public async Task ShouldLoginUser()
@@ -233,8 +245,27 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
-        var result = await response.ToResponseModel();
-        result.Should().NotBeNull();
+
+
+        // Retrieve the user from the database
+        var dbUser = await Context.Users.FirstOrDefaultAsync(x => x.Email == _mainUser.Email);
+        dbUser.Should().NotBeNull();
+        dbUser.Email.Should().Be(_mainUser.Email);
+        var isUserInRole = await UserManager.IsInRoleAsync(dbUser, "User2");
+        isUserInRole.Should().BeTrue();
+        UserManager.PasswordHasher.VerifyHashedPassword(dbUser, dbUser.PasswordHash!, password)
+            .Should().Be(PasswordVerificationResult.Success);
+
+        // Verify the token
+        var handler = new JwtSecurityTokenHandler();
+        var responseToken = await response.Content.ReadAsStringAsync();
+        responseToken.Should().NotBeNullOrEmpty();
+
+        var token = handler.ReadJwtToken(responseToken);
+        token.Should().NotBeNull();
+        token.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == dbUser.Id.ToString());
+        token.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Email && c.Value == dbUser.Email);
+        token.Claims.Should().Contain(c => c.Type == "roles" && c.Value == "User2");
     }
 
     [Fact]
@@ -274,23 +305,23 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-    
+
     [Fact]
     public async Task ShouldUpdateUserRolesSuccessfully()
     {
         // Arrange
         var testUser = _mainUser;
-        var newRoles = new List<string> { "User", "Admin" };
+        var newRoles = new List<string> { _adminRole.Name, _userRole.Name };
 
         // Act
         var response = await Client.PutAsJsonAsync($"users/{testUser.Id}/update-roles", newRoles);
-    
+
         // Assert
         response.IsSuccessStatusCode.Should().BeTrue();
 
         // Force fresh DB read
         await Context.Entry(testUser).ReloadAsync();
-    
+
         var assignedRolesIds = await Context.UserRoles
             .Where(x => x.UserId == testUser.Id)
             .Select(x => x.RoleId)
@@ -303,23 +334,22 @@ public class UsersControllerTests : BaseIntegrationTest, IAsyncLifetime
 
         assignedRoles.Should().BeEquivalentTo(newRoles);
     }
-    
+
     public async Task InitializeAsync()
     {
-        await Context.Users.AddAsync(_mainUser);
-        await Context.Users.AddAsync(_mainUser2);
-        await Context.Users.AddAsync(_userForDeletion);
-        await Context.Roles.AddAsync(_userRole);
-        await Context.Roles.AddAsync(_adminRole);
-        await Context.UserRoles.AddAsync(new IdentityUserRole<Guid> { UserId = _mainUser.Id, RoleId = _adminRole.Id });
-        await Context.UserRoles.AddAsync(new IdentityUserRole<Guid> { UserId = _mainUser.Id, RoleId = _userRole.Id });
+        await RoleManager.CreateAsync(_userRole);
+        await RoleManager.CreateAsync(_adminRole);
+        await UserManager.CreateAsync(_mainUser);
+        await UserManager.CreateAsync(_mainUser2);
+        await UserManager.CreateAsync(_userForDeletion);
+        await UserManager.AddToRoleAsync(_mainUser, _userRole.Name);
+        await UserManager.AddToRoleAsync(_mainUser, _adminRole.Name);
         await SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
         Context.UserRoles.RemoveRange(Context.UserRoles);
-        Context.Projects.RemoveRange(Context.Projects);
         Context.Users.RemoveRange(Context.Users);
         Context.Roles.RemoveRange(Context.Roles);
         await SaveChangesAsync();

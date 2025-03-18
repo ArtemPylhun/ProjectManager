@@ -171,11 +171,11 @@ public class ProjectRepository(ApplicationDbContext context) : IProjectQueries, 
         var existingEntry = context.Projects.Find(project.Id);
         if (existingEntry == null)
         {
-            context.Projects.Add(project); // If not found, add as new
+            context.Projects.Add(project);
         }
         else
         {
-            context.Entry(existingEntry).CurrentValues.SetValues(project); // Update tracked entity
+            context.Entry(existingEntry).CurrentValues.SetValues(project);
         }
 
         await context.SaveChangesAsync(cancellationToken);

@@ -1,0 +1,79 @@
+@model (string UserName, string VerificationLink)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resend Verification Email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #73aaee; /* Using your blue color (#73aaee) */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #526ab7; /* Darker blue (#526ab7) */
+        }
+        .content {
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 10px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        .highlight {
+            color: #73aaee; /* Match your blue design */
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #73aaee;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #526ab7;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Verification Email Resent</h1>
+    </div>
+    <div class="content">
+        <p>Hello <span class="highlight">@Model.UserName</span>,</p>
+        <p>We’ve resent a verification link to your email address to verify your account. Please click the link below to activate your account:</p>
+        <p>
+            <a href="@Model.VerificationLink" class="button">Verify Your Email Now</a>
+        </p>
+        <p>If you continue to have issues, please contact our support team.</p>
+    </div>
+    <div class="footer">
+        <p>© 2025 Your Time Tracking System. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

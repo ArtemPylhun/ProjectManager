@@ -42,9 +42,13 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
         }
         if (user == null)
         {
-            return await Task.FromResult<Result<string, UserException>>(new UserNotFoundException(Guid.Empty));
+            return await Task.FromResult<Result<string, UserException>>(new UserNotFoundException());
         }
         
+        if (!user.EmailConfirmed)
+        {
+            return await Task.FromResult<Result<string, UserException>>( new EmailNotVerifiedException(user.Id));            return new EmailNotVerifiedException(user.Id);
+        }
         
         var result = await _signInManager.PasswordSignInAsync(user, request.Password, false, false);
         if (!result.Succeeded)
@@ -57,6 +61,8 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
         {
             return await Task.FromResult<Result<string, UserException>>(new UserRolesNotFoundException(Guid.Empty));
         }
+        
+        
         
         var token = _jwtProvider.GenerateToken(user, roles.ToList());
 

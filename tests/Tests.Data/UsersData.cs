@@ -12,10 +12,9 @@ public static class UsersData
         Id = Guid.NewGuid(),
         Email = "adminN@gmail.com",
         UserName = "adminN",
-        NormalizedUserName = "adminN".ToUpperInvariant(),
         PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
-        NormalizedEmail = "adminN@gmail.com".ToUpperInvariant(),
-        SecurityStamp = Guid.NewGuid().ToString()
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
     };
     
     public static User NewUser = new User
@@ -23,10 +22,9 @@ public static class UsersData
         Id = Guid.NewGuid(),
         Email = "email@gmail.com",
         UserName = "username",
-        NormalizedUserName = "username".ToUpperInvariant(),
         PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
-        NormalizedEmail = "email@gmail.com".ToUpperInvariant(),
-        SecurityStamp = Guid.NewGuid().ToString()
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
     };
 
     public static User MainUser = new User
@@ -34,10 +32,9 @@ public static class UsersData
         Id = Guid.NewGuid(),
         Email = "userName@gmail.com",
         UserName = "UserName",
-        NormalizedUserName = "UserName".ToUpperInvariant(),
         PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
-        NormalizedEmail = "userName@gmail.com".ToUpperInvariant(),
-        SecurityStamp = Guid.NewGuid().ToString()
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
     };
     
     public static User MainUser2 = new User
@@ -45,10 +42,9 @@ public static class UsersData
         Id = Guid.NewGuid(),
         Email = "userName2@gmail.com",
         UserName = "UserName2",
-        NormalizedUserName = "UserName2".ToUpperInvariant(),
         PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
-        NormalizedEmail = "userName2@gmail.com".ToUpperInvariant(),
-        SecurityStamp = Guid.NewGuid().ToString()
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
     };
     
     public static User UserForDeletion = new User
@@ -56,10 +52,71 @@ public static class UsersData
         Id = Guid.NewGuid(),
         Email = "userName12@gmail.com",
         UserName = "UserName12",
-        NormalizedUserName = "UserName12".ToUpperInvariant(),
         PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
-        NormalizedEmail = "userName12@gmail.com".ToUpperInvariant(),
-        SecurityStamp = Guid.NewGuid().ToString()
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
+    };
+    
+    
+    public static User MainUserForProject = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "userNameForProject@gmail.com",
+        UserName = "userNameForProject",
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
+    };
+    
+    public static User MainUserForProjectTask = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "userNameForProjectTask@gmail.com",
+        UserName = "userNameForProjectTask",
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
+    };
+    
+    public static User MainUserForProjectTask2 = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "userNameForProjectTask2@gmail.com",
+        UserName = "userNameForProjectTask2",
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
+    };
+    
+    
+    public static User MainUserForTimeEntry = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "userNameForTimeEntry@gmail.com",
+        UserName = "userNameForTimeEntry",
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
+    };
+    
+    public static User MainUserForTimeEntry2 = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "userNameForTimeEntry2@gmail.com",
+        UserName = "userNameForTimeEntry2",
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
+    };
+    
+    public static User MainUserForProjectUser = new User
+    {
+        Id = Guid.NewGuid(),
+        Email = "userNameForProjectUser@gmail.com",
+        UserName = "userNameForProjectUser",
+        PasswordHash = PasswordHasher.HashPassword(null, "Admin!23"),
+        SecurityStamp = Guid.NewGuid().ToString(),
+        EmailConfirmed = true
     };
     
 }

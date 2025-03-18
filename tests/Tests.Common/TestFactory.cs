@@ -1,3 +1,4 @@
+using Application.Common.Interfaces.Services;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Npgsql;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -27,6 +30,14 @@ public class IntegrationTestWebFactory : WebApplicationFactory<Program>, IAsyncL
         builder.ConfigureTestServices(services =>
         {
             RegisterDatabase(services);
+            
+            services.RemoveServiceByType(typeof(IEmailService));
+            
+            var emailServiceMock = new Mock<IEmailService>();
+            emailServiceMock.Setup(x => x.SendEmail
+                (It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
+
+            services.AddScoped(_ => emailServiceMock.Object);
         }).ConfigureAppConfiguration((_, config) =>
         {
             config
@@ -49,17 +60,19 @@ public class IntegrationTestWebFactory : WebApplicationFactory<Program>, IAsyncL
                     dataSource,
                     b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName))
                 .UseSnakeCaseNamingConvention()
-                .ConfigureWarnings(w => w.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
+                .ConfigureWarnings(w => w.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning))
+                .EnableSensitiveDataLogging()
+                .LogTo(Console.WriteLine, LogLevel.Information));
     }
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        return _dbContainer.StartAsync();
+        await _dbContainer.StartAsync();
     }
 
-    public new Task DisposeAsync()
+    public new async Task DisposeAsync()
     {
-        return _dbContainer.DisposeAsync().AsTask();
+        await _dbContainer.DisposeAsync().AsTask();
     }
 }
 

@@ -27,7 +27,7 @@ public class ProjectTaskConfiguration: IEntityTypeConfiguration<ProjectTask>
         builder.HasOne(p => p.Creator) 
             .WithMany(u => u.CreatedProjectTasks) 
             .HasForeignKey(p => p.CreatorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(p => p.Status)
         .HasConversion(

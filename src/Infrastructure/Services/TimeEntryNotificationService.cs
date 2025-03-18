@@ -19,9 +19,7 @@ public class TimeEntryNotificationService(
     ITimeEntryQueries timeEntryQueries,
     UserManager<User> userManager,
     IEmailService emailService,
-    ICompositeViewEngine viewEngine,
-    ITempDataProvider tempDataProvider,
-    IServiceProvider serviceProvider) : ITimeEntryNotificationService
+    IEmailViewRenderer emailViewRenderer) : ITimeEntryNotificationService
 {
     private const int RequiredDailyMinutes = 480;
     private const int PreviousDayNumber = -1;
@@ -63,55 +61,7 @@ public class TimeEntryNotificationService(
         var model = (Email: email, NoEntries: noEntries, InsufficientMinutes: insufficientMinutes, CurrentMinutes: currentMinutes);
         var subject = "Time Entry Reminder";
 
-        // Use the application’s IServiceProvider to create a scope and resolve services
-        using var scope = serviceProvider.CreateScope();
-        var scopedServices = scope.ServiceProvider;
-
-        var routeData = new Microsoft.AspNetCore.Routing.RouteData();
-        var actionDescriptor = new ActionDescriptor
-        {
-            DisplayName = "TimeEntryReminder" // Provide a display name for debugging
-        };
-
-        // Create a minimal HttpContext with services from the application’s DI
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = scopedServices
-        };
-
-        var actionContext = new ActionContext(httpContext, routeData, actionDescriptor);
-
-        // Generate HTML content using Razor
-        var viewResult = viewEngine.FindView(actionContext, "TimeEntryReminder", true); // Search shared locations (including wwwroot/Emails/)
-        if (viewResult.View == null)
-        {
-            throw new InvalidOperationException($"Could not find the TimeEntryReminder view. Searched locations: {string.Join(", ", viewResult.SearchedLocations ?? Enumerable.Empty<string>())}");
-        }
-
-        using var writer = new StringWriter();
-
-        var viewContext = new ViewContext(
-            actionContext,
-            viewResult.View,
-            new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()) { Model = model },
-            new TempDataDictionary(actionContext.HttpContext, tempDataProvider), // Use the injected ITempDataProvider
-            writer,
-            new HtmlHelperOptions()
-        );
-
-        // Ensure the ViewContext has access to the application’s services
-        viewContext.HttpContext.RequestServices = scopedServices; // Explicitly set RequestServices to ensure all services are available
-
-        try
-        {
-            viewResult.View.RenderAsync(viewContext).GetAwaiter().GetResult();
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Failed to render the view: {ex.Message}", ex);
-        }
-
-        var htmlBody = writer.ToString();
+        var htmlBody = emailViewRenderer.RenderView("TimeEntryReminder", model, email, subject);
 
         emailService.SendEmail(email, subject, htmlBody, isHtml: true);
     }

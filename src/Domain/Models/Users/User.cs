@@ -8,6 +8,8 @@ namespace Domain.Models.Users;
 
 public class User: IdentityUser<Guid>
 {
+    public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiration { get; set; }
     public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
     public ICollection<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();
     public ICollection<Project> CreatedProjects { get; set; } = new List<Project>();

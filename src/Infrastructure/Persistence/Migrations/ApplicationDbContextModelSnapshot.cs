@@ -271,6 +271,14 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("email_confirmed");
 
+                    b.Property<string>("EmailVerificationToken")
+                        .HasColumnType("text")
+                        .HasColumnName("email_verification_token");
+
+                    b.Property<DateTime?>("EmailVerificationTokenExpiration")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("email_verification_token_expiration");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean")
                         .HasColumnName("lockout_enabled");
@@ -463,7 +471,7 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasOne("Domain.Models.Users.User", "Creator")
                         .WithMany("CreatedProjectTasks")
                         .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_project_tasks_users_creator_id");
 

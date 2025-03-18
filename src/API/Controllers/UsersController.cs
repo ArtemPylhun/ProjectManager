@@ -19,7 +19,12 @@ namespace API.Controllers;
 
 [Route("users")]
 [ApiController]
-public class UsersController(ISender sender, UserManager<User> userManager, RoleManager<Role> roleManager, IProjectQueries projectQueries, IJwtProvider _jwtProvider) : ControllerBase
+public class UsersController(
+    ISender sender,
+    UserManager<User> userManager,
+    RoleManager<Role> roleManager,
+    IProjectQueries projectQueries,
+    IJwtProvider _jwtProvider) : Controller
 {
     [Authorize(Roles = "Admin")]
     [HttpGet("get-all")]
@@ -28,13 +33,13 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         var entities = await userManager.Users.ToListAsync(cancellationToken);
         return entities.Select(UserDto.FromDomainModel).ToList();
     }
-    
+
     [Authorize(Roles = "Admin")]
     [HttpGet("get-all-paginated")]
     public async Task<ActionResult<PaginatedResponse<UserDto>>> GetAll(
-        [FromQuery] int page = 1, 
-        [FromQuery] int pageSize = 10, 
-        [FromQuery] string? searchQuery = null, 
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? searchQuery = null,
         CancellationToken cancellationToken = default)
     {
         var query = userManager.Users.AsQueryable();
@@ -72,7 +77,7 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         var roles = await userManager.GetRolesAsync(user);
         return UserWithRolesDto.FromDomainModel(user, roles);
     }
-    
+
     [Authorize(Roles = "Admin,User")]
     [HttpGet("get-all-with-roles")]
     public async Task<ActionResult<IReadOnlyList<UserWithRolesDto>>> GetAllWithRoles(
@@ -91,7 +96,8 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
 
     [HttpGet("get-all-with-roles-by-project-id/{projectId:guid}")]
     [Authorize(Roles = "Admin,User")]
-    public async Task<ActionResult<PaginatedResponse<UserWithRolesDto>>> GetAllWithRolesByProjectId([FromRoute] Guid projectId,
+    public async Task<ActionResult<PaginatedResponse<UserWithRolesDto>>> GetAllWithRolesByProjectId(
+        [FromRoute] Guid projectId,
         CancellationToken cancellationToken)
     {
         var userIds = await projectQueries.GetAllUsersByProjectId(projectId, cancellationToken);
@@ -107,13 +113,13 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
 
         return Ok(result.ToList());
     }
-        
+
     [HttpGet("get-all-with-roles-paginated")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<PaginatedResponse<UserWithRolesDto>>> GetAllWithRoles(
-        [FromQuery] int page = 1, 
-        [FromQuery] int pageSize = 10, 
-        [FromQuery] string? search = null, 
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
         CancellationToken cancellationToken = default)
     {
         var query = userManager.Users.AsQueryable();
@@ -144,7 +150,7 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
             PageSize = pageSize
         });
     }
-    
+
     [HttpPost("login")]
     public async Task<ActionResult> LoginUser([FromBody] UserLoginDto request, CancellationToken cancellationToken)
     {
@@ -169,7 +175,7 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         Console.WriteLine($"Initiating Facebook login, redirecting to: {redirectUrl}");
         return Challenge(properties, "Facebook");
     }
-    
+
     [HttpGet("facebook-callback")]
     public async Task<IActionResult> FacebookCallback()
     {
@@ -180,10 +186,11 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         {
             Console.WriteLine($"Facebook OAuth error: {error} - {errorDescription}");
             // Redirect back to frontend login with an error query param
-            var redirectUrl = $"http://localhost:5173/login?error={Uri.EscapeDataString(error)}&error_description={Uri.EscapeDataString(errorDescription)}";
+            var redirectUrl =
+                $"http://localhost:5173/login?error={Uri.EscapeDataString(error)}&error_description={Uri.EscapeDataString(errorDescription)}";
             return Redirect(redirectUrl);
         }
-        
+
         var result = await HttpContext.AuthenticateAsync("Facebook");
         if (!result.Succeeded)
         {
@@ -195,6 +202,7 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
                 var redirectUrl = $"http://localhost:5173/login?token={Uri.EscapeDataString(tokenValue)}";
                 return Redirect(redirectUrl);
             }
+
             Console.WriteLine("Facebook authentication failed");
             return BadRequest("Facebook authentication failed");
         }
@@ -202,7 +210,8 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         var claims = result.Principal.Claims.Select(c => $"{c.Type}: {c.Value}");
         Console.WriteLine("Facebook claims: " + string.Join(", ", claims));
 
-        var email = result.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+        var email = result.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")
+            ?.Value;
         var name = result.Principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
         name = name?.Replace(' ', '_');
         var facebookId = result.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -221,18 +230,22 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
             user = new User
             {
                 UserName = name ?? facebookId,
-                Email = userEmail
+                Email = userEmail,
+                EmailConfirmed = true
             };
             var createResult = await userManager.CreateAsync(user);
             if (!createResult.Succeeded)
             {
-                Console.WriteLine("User creation failed: " + string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                Console.WriteLine("User creation failed: " +
+                                  string.Join(", ", createResult.Errors.Select(e => e.Description)));
                 return BadRequest(createResult.Errors);
             }
+
             await userManager.AddToRoleAsync(user, "User");
         }
+
         var userRole = await userManager.GetRolesAsync(user);
-        
+
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
         var tokenString = _jwtProvider.GenerateToken(user, userRole.ToList());
@@ -242,7 +255,7 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         Console.WriteLine($"Redirecting to: {redirect}");
         return Redirect(redirect);
     }
-    
+
     [HttpPost("create")]
     public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateDto request,
         CancellationToken cancellationToken)
@@ -257,10 +270,36 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<UserDto>>(
-            u => UserDto.FromDomainModel(u),
+            u => Ok(u),
             e => e.ToObjectResult());
     }
     
+    [HttpGet("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromQuery] Guid userId, [FromQuery] string token)
+    {
+        var command = new VerifyEmailCommand { UserId = userId, Token = token };
+        var result = await sender.Send(command);
+        return result.Match<IActionResult>(
+            success =>
+            {
+                return View("EmailVerificationConfirmed", (success.email, success.userName));
+            },
+            exception => exception.ToObjectResult()
+        );
+    }
+    [HttpPost("resend-verification")]
+    public async Task<IActionResult>
+    esendVerificationEmail([FromBody] string email)
+    {
+        var command = new ResendEmailVerificationCommand { Email = email };
+        var result = await sender.Send(command);
+        return result.Match<IActionResult>(
+            success => Ok(new { message = "Verification email resent successfully" }),
+            exception => exception.ToObjectResult()
+        );
+    }
+    
+
     [Authorize(Roles = "Admin")]
     [HttpPut("update")]
     public async Task<ActionResult<UserDto>> Update([FromBody] UserUpdateDto request,
@@ -297,14 +336,14 @@ public class UsersController(ISender sender, UserManager<User> userManager, Role
 
         if (invalidRoles.Any())
         {
-           return BadRequest("Invalid roles: " + string.Join(", ", invalidRoles));
+            return BadRequest("Invalid roles: " + string.Join(", ", invalidRoles));
         }
-        
+
         var currentRoles = await userManager.GetRolesAsync(user);
         var removeResult = await userManager.RemoveFromRolesAsync(user, currentRoles);
         if (!removeResult.Succeeded)
             return BadRequest("Failed to remove existing roles.");
-        
+
 
         var addResult = await userManager.AddToRolesAsync(user, existingRoles);
         if (!addResult.Succeeded)

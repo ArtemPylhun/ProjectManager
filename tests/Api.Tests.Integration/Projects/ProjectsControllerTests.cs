@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using API.DTOs;
 using Domain.Models.Projects;
-using Domain.Models.ProjectUsers;
 using Domain.Models.Roles;
 using Domain.Models.Users;
 using FluentAssertions;
@@ -21,10 +20,10 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public ProjectsControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
-        _mainUser = UsersData.MainUser;
+        _mainUser = UsersData.MainUserForProject;
+        _projectRole = RolesData.ProjectRole;
         _existingProject = ProjectsData.ExistingProject(_mainUser.Id, _mainUser.Id);
         _existingProject2 = ProjectsData.ExistingProject2(_mainUser.Id, _mainUser.Id);
-        _projectRole = RolesData.ProjectRole;
     }
 
     [Fact]
@@ -238,9 +237,9 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await Context.Users.AddAsync(_mainUser);
+        await RoleManager.CreateAsync(_projectRole);
         await SaveChangesAsync();
-        await Context.Roles.AddAsync(_projectRole);
+        await UserManager.CreateAsync(_mainUser);
         await Context.Projects.AddAsync(_existingProject);
         await Context.Projects.AddAsync(_existingProject2);
         await SaveChangesAsync();
@@ -248,11 +247,13 @@ public class ProjectsControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        Context.TimeEntries.RemoveRange(Context.TimeEntries);
+        Context.ProjectUsers.RemoveRange(Context.ProjectUsers);
         Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
         Context.Projects.RemoveRange(Context.Projects);
         Context.UserRoles.RemoveRange(Context.UserRoles);
-        Context.Roles.RemoveRange(Context.Roles);
         Context.Users.RemoveRange(Context.Users);
+        Context.Roles.RemoveRange(Context.Roles);
         await SaveChangesAsync();
     }
 }

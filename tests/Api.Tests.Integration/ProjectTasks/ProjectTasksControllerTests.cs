@@ -19,11 +19,10 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     private readonly ProjectTask _newProjectTask;
     private readonly ProjectTask _existingProjectTask;
     private readonly ProjectTask _existingProjectTask2;
-
     public ProjectTasksControllerTests(IntegrationTestWebFactory factory) : base(factory)
     {
-        _mainUser = UsersData.MainUser;
-        _mainUser2 = UsersData.MainUser2;
+        _mainUser = UsersData.MainUserForProjectTask;
+        _mainUser2 = UsersData.MainUserForProjectTask2;
         _existingProject = ProjectsData.ExistingProject(_mainUser.Id, _mainUser.Id);
         _newProjectTask = ProjectTasksData.NewProjectTask(_existingProject.Id, _mainUser.Id);
         _existingProjectTask = ProjectTasksData.ExistingProjectTask(_existingProject.Id, _mainUser2.Id);
@@ -175,11 +174,10 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await Context.Users.AddAsync(_mainUser);
-        await Context.Users.AddAsync(_mainUser2);
+        await UserManager.CreateAsync(_mainUser);
+        await UserManager.CreateAsync(_mainUser2);
         await SaveChangesAsync();
         await Context.Projects.AddAsync(_existingProject);
-        await SaveChangesAsync();
         await Context.ProjectTasks.AddAsync(_existingProjectTask);
         await Context.ProjectTasks.AddAsync(_existingProjectTask2);
         await SaveChangesAsync();
@@ -189,9 +187,7 @@ public class ProjectTasksControllerTests : BaseIntegrationTest, IAsyncLifetime
     {
         Context.ProjectTasks.RemoveRange(Context.ProjectTasks);
         Context.Projects.RemoveRange(Context.Projects);
-        Context.UserRoles.RemoveRange(Context.UserRoles);
         Context.Users.RemoveRange(Context.Users);
-        Context.Roles.RemoveRange(Context.Roles);
         await SaveChangesAsync();
     }
 }

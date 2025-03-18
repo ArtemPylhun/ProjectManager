@@ -32,7 +32,7 @@ public class DeleteUserCommandHandler
 
         if (existingUser is null)
         {
-            return await Task.FromResult<Result<User, UserException>>(new UserNotFoundException(request.UserId));
+            return await Task.FromResult<Result<User, UserException>>(new UserNotFoundException());
         }
 
         var projectsWithCreator = await _projectQueries.GetAllByCreator(existingUser.Id, cancellationToken);

@@ -6,7 +6,7 @@ public class UserException(Guid id, string message, Exception? innerException = 
     public Guid UserId { get; } = id;
 }
 
-public class UserNotFoundException(Guid id) : UserException(id, $"User under id: {id} not found!");
+public class UserNotFoundException() : UserException(Guid.Empty, $"User with not found!");
 
 public class UserWithNameAlreadyExistsException(Guid id, string username) : UserException(id, $"User under such userName: \"{username}\" already exists!");
 
@@ -25,3 +25,12 @@ public class TokenExpiredException() : UserException(Guid.Empty, "Token expired!
 public class InvalidTokenException() : UserException(Guid.Empty, "Invalid token!");
 
 public class UserAlreadyUsedInProject(Guid id) : UserException(id, "This User is already used in projects!");
+
+public class EmailNotVerifiedException(Guid id)
+    : UserException(id, $"User email is not verified!");
+
+public class InvalidVerificationTokenException(Guid id)
+    : UserException(id, $"Invalid verification token!");
+
+public class EmailVerificationTokenExpiredException(Guid id)
+    : UserException(id, $"Email verification token expired!");

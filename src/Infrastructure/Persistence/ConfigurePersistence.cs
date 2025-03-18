@@ -33,6 +33,7 @@ public static class ConfigurePersistence
 
         services.AddIdentity<User, Role>(options =>
             {
+                options.SignIn.RequireConfirmedEmail = true;
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
                 options.Password.RequireNonAlphanumeric = false;

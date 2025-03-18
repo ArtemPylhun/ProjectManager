@@ -31,7 +31,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
 
         if (existingUser == null)
         {
-            return await Task.FromResult<Result<User, UserException>>(new UserNotFoundException(request.UserId));
+            return await Task.FromResult<Result<User, UserException>>(new UserNotFoundException());
         }
         var existingUserWithUserName = await _userManager.FindByNameAsync(
             request.UserName);

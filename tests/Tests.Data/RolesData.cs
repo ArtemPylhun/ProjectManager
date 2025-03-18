@@ -9,7 +9,16 @@ public static class RolesData
         {
             Id = Guid.NewGuid(),
             Name = "User",
-            NormalizedName = "User".ToUpperInvariant(),
+            RoleGroup = RoleGroups.General,
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        };
+    
+    public static Role UserRole2 =>
+        new Role
+        {
+            Id = Guid.NewGuid(),
+            Name = "User2",
+            RoleGroup = RoleGroups.General,
             ConcurrencyStamp = Guid.NewGuid().ToString()
         };
 
@@ -18,7 +27,16 @@ public static class RolesData
         {
             Id = Guid.NewGuid(),
             Name = "Admin2",
-            NormalizedName = "Admin2".ToUpperInvariant(),
+            RoleGroup = RoleGroups.General,
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        };
+    
+    public static Role AdminRole3 =>
+        new Role
+        {
+            Id = Guid.NewGuid(),
+            Name = "Admin3",
+            RoleGroup = RoleGroups.General,
             ConcurrencyStamp = Guid.NewGuid().ToString()
         };
     
@@ -27,7 +45,7 @@ public static class RolesData
         {
             Id = Guid.NewGuid(),
             Name = "Admin",
-            NormalizedName = "Admin".ToUpperInvariant(),
+            RoleGroup = RoleGroups.General,
             ConcurrencyStamp = Guid.NewGuid().ToString()
         };
 
@@ -36,7 +54,7 @@ public static class RolesData
         {
             Id = Guid.NewGuid(),
             Name = "Creator1",
-            NormalizedName = "Creator1".ToUpperInvariant(),
+            RoleGroup = RoleGroups.Projects,
             ConcurrencyStamp = Guid.NewGuid().ToString()
         };
 
@@ -46,7 +64,6 @@ public static class RolesData
             Id = Guid.NewGuid(),
             Name = "TeamLead",
             RoleGroup = RoleGroups.Projects,
-            NormalizedName = "TeamLead".ToUpperInvariant(),
             ConcurrencyStamp = Guid.NewGuid().ToString()
         };
 }

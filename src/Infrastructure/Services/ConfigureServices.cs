@@ -36,11 +36,8 @@ public static class ConfigureServices
         {
             options.ViewLocationExpanders.Add(new InfrastructureViewLocationExpander());
         });
-
-        services.AddSingleton<ITempDataProvider, CookieTempDataProvider>(); 
-        services.AddSingleton<ICompositeViewEngine, CompositeViewEngine>(); 
-
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ITimeEntryNotificationService, TimeEntryNotificationService>();
+        services.AddScoped<IEmailViewRenderer, EmailViewRenderer>();
     }
 }

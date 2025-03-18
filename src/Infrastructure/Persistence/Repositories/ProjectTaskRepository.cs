@@ -154,7 +154,7 @@ public class ProjectTaskRepository(ApplicationDbContext context) : IProjectTaskR
         }
         else
         {
-            context.Entry(existingEntry).CurrentValues.SetValues(projectTask); // Update tracked entity
+            context.Entry(existingEntry).CurrentValues.SetValues(projectTask);
         }
 
         await context.SaveChangesAsync(cancellationToken);
